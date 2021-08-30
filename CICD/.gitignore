@@ -1,0 +1,11 @@
+*.synctex.gz
+*.out
+*.log
+*.fls
+*.fdb_latexmk
+*.blg
+*.bbl
+*.aux
+CICD.log
+CICD.dvi
+*.mp4

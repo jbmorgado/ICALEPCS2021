@@ -1,0 +1,215 @@
+\documentclass[]{spie}  %>>> use for US letter paper
+%\documentclass[a4paper]{spie}  %>>> use this instead for A4 paper
+%\documentclass[nocompress]{spie}  %>>> to avoid compression of citations
+
+\renewcommand{\baselinestretch}{1.0} % Change to 1.65 for double spacing
+ 
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{TANGO-grafana: an online diagnostic tool to assist in the analysis of interconnected problems difficult to debug in the context of the Square Kilometre Array (SKA) telescope project}
+
+\author[a]{Di Carlo M.}
+\author[b]{Harding P.}
+\author[c]{Le Roux G.}
+\author[a]{Dolci M.}
+
+\affil[a]{INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy}
+\affil[b]{SKA Organisation, Macclesfield, UK}
+\affil[c]{SKA South Africa, SA}
+
+\authorinfo{Further author information: (Send correspondence to Di Carlo M.)\\Di Carlo M.: E-mail: matteo.dicarlo@inaf.it\\  Dolci M.: E-mail: mauro.dolci@inaf.it\\ Harding P.: E-mail: P.Harding@skatelescope.org\\ Le Roux U.: E-mail: gerhard@spaceadvisory.com }
+
+% Option to view page numbers
+\pagestyle{empty} % change to \pagestyle{plain} for page numbers   
+\setcounter{page}{301} % Set start page numbering at e.g. 301
+ 
+\begin{document} 
+\maketitle
+
+\begin{abstract}
+The selected solution for monitoring the SKA Minimum Viable Product (MVP) Prototype Integration (SKAMPI) is Prometheus. Starting from a study on the modifiability aspects of it, the Grafana project emerged as an important tool for displaying data in order to make specific reasoning and debugging of particular aspect of SKAMPI. Its plugin architecture easily allow to add new data sources like prometheus but the TANGO related data sources has been added as well. The main concept of grafana is the dashboard, which enable to create real analysis. In this paper four example analysis are presented which take advantage of four different datasources and a variety of different panel (widget) for reasoning on archiving data, monitoring data, state of the system and general health of it.
+\end{abstract}
+
+% Include a list of keywords after the abstract 
+\keywords{diagnostic, SKA, TANGO, System team, TANGO controls framework, Bridging, Software development}
+
+\section{INTRODUCTION} 
+\label{sec:intro}  % \label{} allows reference to this section
+
+The SKA MVP Prototype Integration, or SKAMPI~\cite{SKAMPI}, is both the set of software artefacts, and the corresponding repository and continuous integration facilities that allow for the development, testing, and integration of the SKA prototype software systems. It represents the main effort to integrate the components from the different SKA elements with each other, with the goal to provide first deployable versions of SKA software. 
+To support this prototype, an openstack virtualization~\cite{openstack} has been adopted containing some infrastructure services like kubernetes~\cite{kubernetes} as container orchestrator, ceph~\cite{ceph} and elasticsearch~\cite{elastic}. 
+This infrastructure needs monitoring at various levels such as node moritoring (i.e. cpu, memory and disk space) but also specific monitoring for the docker layer, k8s and so on. The selected solution for monitoring the entire SKA environment is Prometheus~\cite{prometheus}.
+The SKAMPI project can be seen as many different active components talking together with the helm of the TANGO-controls framework. This also means that it is not easy to debug problems because the sources of information are very different (from k8s logs to the monitoring infrastructure. For this reasn a tool that can put together many data sources with the possibility to build many different visual plugins to show data can be a key tool in diagnosing and solving problems that from time to time arises. 
+
+\subsection{Prometheus}
+
+Prometheus is a client server architecture where prometheus represents the client which read (scrape in its language) timestamped information from many servers (called targets or exporters). All data are then stored in a disk in TSDB format~\cite{tsdb}. Fig.~\ref{fig:prometheus} reports a diagram taken from the prometheus documentation that shows its main components where the most important are: 
+\begin{itemize}
+    \item the prometheus server which is composed by the retrieval component, the TSDB storage, and the http server for information retrieval,
+    \item the jobs/exporters components from which prometheus takes information as time series and 
+    \item the data visualization and export which are external tools that integrates with prometheus with a specific query language called promql. 
+\end{itemize}
+Each exporter provides time series uniquely identified by its metric name and some optional key-value pairs (called labels). It is important to note that the exporter must give all the information about its monitoring that is it must have all the information related to the “instrument”. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{prometheus.png}
+   \caption{Prometheus run-time components}
+   \label{fig:prometheus}
+\end{figure}
+
+\subsection{TANGO-controls overview}
+The SKAMPI prototype is mostly based on a framework called TANGO-controls~\cite{tango-controls} which is a middleware for connecting software processes together mainly based on the CORBA standard (Common Object Request Broker Architecture). The standard defines how to exposes the procedures of an object within a software process with the RPC protocol (Remote Procedure Call). The TANGO framework extends the definition of object with the concept of Device which represents a real or virtual device to control that expose commands (i.e. procedures), attributes (i.e. state) and allows both synchronous and asynchronous communication with events generated from the attributes (for instance a change in the value can generate an event). Fig.~\ref{fig:tangodatamodel}  shows a module view of the framework.
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{SimplifiedDataModel}
+   \caption{TANGO-Controls simplified data model.}
+   \label{fig:tangodatamodel}
+\end{figure}
+
+\section{TANGO-Exporter}
+One of the most important quality of the prometheus monitoring solution is the modifiability. It is in fact very easy to add new exporter since they are basically simple http server which provide a well defined metrics information. Writing an exporter is very easy and the first step for creating a diagnostic tool for SKAMPI was to create a TANGO exporter which is able to read all the attributes from a TANGO control system like SKAMPI. The result is few hundreds of lines of code with more than 4000 attributes read in less than 4ss (the timeout for reading an attribute is very low: 10ms). Fig.~\ref{fig:exporter} shows the result of a query to this exporter. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{exporter}
+   \caption{TANGO exporter graph view from Prometheus GUI}
+   \label{fig:exporter}
+\end{figure}
+
+\section{TANGO-Grafana}
+
+One of the quality of Prometheus is its ability to integrate with with many visualization engines. One of them is Grafana~\cite{grafana}, an engine for displaying data on web coming from many data sources. Working with Grafana means to create dashboards in order to perform a particular analysis on a set of monitoring data. From an architectural point of view, it is a plugin architecture where a plugin can be: 
+\begin{itemize}
+    \item a panel (the basic visualization building block in Grafana),
+    \item a data source (such as prometheus, mysql or elasticsearch) or 
+    \item an app (combination of panels and data sources for a specific purpose).
+\end{itemize}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=1\columnwidth]{TANGO-Grafana}
+   \caption{TANGO-Grafana data model}
+   \label{fig:tangografana}
+\end{figure}
+
+This architecture can be personalized very well for giving the developers and testers the ability to diagnose any kind of problem that can happen in a production system. Fig.~\ref{fig:tangografana} shows the resulting model (in sysml) of the customization made. The starting point is the block Grafana which is basically an aggregation of plugins and is associated with one or more dashboards (a collection of panels). A plugin can be a panel, an app or a data source. The data sources used are Prometheus, two mysql database, one for the TANGO archiver~\cite{tangoarchiver} and another one for the TANGO database (which represents the CORBA naming server) and the elasticsearch which can be local (in case of local development) or remote (namely Engage which is used in the integration environment). 
+In this model it is shown two more customization made for displaying information in Grafana: the TANGO-Attribute (see section \ref{TANGO-Attribute}) and the TANGO-Command (see section \ref{TANGO-Command}) panels. 
+
+Fig.~\ref{fig:scalar} and Fig.~\ref{fig:spectrum} shows two panels which displays a scalar and a spectrum attribute from a TANGO device. In the second figure there is also a comparison with the java GUI interface provided with the TANGO-controls framework. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{scalar}
+       \caption{TANGO scalar attribute}
+   \label{fig:scalar}
+\end{figure}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{spectrum}
+       \caption{TANGO spectrum attribute}
+   \label{fig:spectrum}
+\end{figure}
+
+The entire code of this project is available in ~\cite{tango-grafana}.
+
+\subsection{TANGO-Attribute} \label{TANGO-Attribute}
+
+In prometheus and grafana, everything is a number but, in TANGO, attributes can be string, state or enum as well. In order to make possible the view of those kind of attributes a new panel plugin for Grafana has been developed (namely TANGO-Attribute) which enable to see all the attributes of one or more device in the form of table. The state attribute is highlighted so that it will be the first information that the users will see. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{tango attribute}
+       \caption{TANGO attribute Grafana plugin panel}
+   \label{fig:tangoattribute}
+\end{figure}
+
+\subsection{TANGO-Command} \label{TANGO-Command}
+
+All the customization made for display monitoring data make Grafana a very good candidate for making diagnosis analysis. Usually together with monitoring there's also a control counterpart which is not as easy as to build a dashboard. In fact, in order to send control commands to the TANGO eco-system CORS~\cite{cors} problems can be found (in this project they have been solved with the help of an http proxy) together with problems in sending complex parameter to the back-end. 
+Anyway another plugin has been developed which is able to send control command to the TANGO gql based back-end which is shown in Fig.~\ref{fig:tangocommand}.
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{tango command}
+       \caption{TANGO command Grafana plugin panel}
+   \label{fig:tangocommand}
+\end{figure}
+
+\section{Dashboards}
+Four dashboards has been created as examples in order to demonstrate the types of analysis that is possible to make with this tools. They are described in the sections below. 
+
+\subsection{TANGO generic dashboard}
+With low effort (except for the code written for the tango exporter) it was possible to build a first dashboard which analyse the entire system making explicit any error in reading the attributes as shown in fig.~\ref{fig:tangodashboard1}. Using the community plugin for AJAX calls~\cite{ryantxu-ajax-panel} it is also possible to query the TANGO rest api~\cite{tango-rest} which, in this case, gives useful information about the general (TANGO) system deployed. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{tangodashboard1}
+       \caption{TANGO generic dashboard}
+   \label{fig:tangodashboard1}
+\end{figure}
+
+\subsection{TANGO Database dashboard}
+The TANGO Database dashboard represents a live view of the mysql TANGO database. It allows to check the details of a running process (i.e. device server) such as the CORBA identifier the process identifier and so on. Fig. ~\ref{fig:database_dash} shows the Device table which shows the detailed devices information. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{database_dash}
+       \caption{Database tables for TANGO naming}
+   \label{fig:database_dash}
+\end{figure}
+
+\subsection{TANGO archiver dashboard}
+The TANGO archiver dashboard represents a live view of the mysql TANGO database available for the archiving system. It allows to check for the attribute configured and it gives an example on how it is possible to see data coming from this data source. Fig. ~\ref{fig:archiver1} shows the tables coming from the archiver data source and two panel examples from data coming from it (fig. ~\ref{fig:archiver2}).
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{archiver1}
+       \caption{Archiver tables of configured attributes}
+   \label{fig:archiver1}
+\end{figure}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{archiver2}
+       \caption{Data coming from the archiver data sources}
+   \label{fig:archiver2}
+\end{figure}
+
+\subsection{State analysis dashboard}
+The State analysis dashboard represents an effort to make an analysis on how the states of different devices change over time. The data are taken both from prometheus and from the archiver making visible the differences between the two data sources (with respect to the writing time on the disk). In fact, while the data in prometheus changes slowly, the same data changes very fast on the archiver. This also represents the distinction between the prometheus philosophy and the archiving philosophy.  
+In the same dashboard, the log panel is also shown so that when the state change failure it is also possible to check what's written in the logs taken from the Elasticsearch data source. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{state_analysis}
+       \caption{State changes over time}
+   \label{fig:state_analysis}
+\end{figure}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.6\columnwidth]{logs}
+       \caption{Log panel}
+   \label{fig:logs}
+\end{figure}
+
+\section{Conclusion and future work}
+The SKAMPI project can be seen as many different active components talking together with the helm of the TANGO-controls framework. When a problem arises a tool that can put together many data sources with the possibility to show data in different forms is a key tool in diagnosing and solving problems. 
+The Grafana project is a tool for displaying data in order to make specific reasoning and debugging of particular aspect of a project. Its plugin architecture allow to add many data sources and an installation with the Prometheus database, the TANGO related data sources and Elasticsearch was easy to realize. 
+With a visual plugin (see section \ref{TANGO-Attribute}) in order to display not only numerical data but also string-based data type (like the TANGO state or string) together with another plugin which allow to send simple control commands (see section \ref{TANGO-Command}) it has been possible to enable many kind of analysis with the base ability of Grafana to build dashboard. 
+The potential of this diagnostic tool resides overall on the analysis that it enables. Considering the work done for "Achieving a rolled-up view of SKA TM health status and state: definition and analysis of aggregation methods"~\cite{10.1117/12.2314056}, and considering that each aspect of the lifecycle of every SKA element will be reported as timestamped data in a Prometheus server or in one of the data sources available in the TANGO framework, the aggregation methods provided in the paper can be easily realized. 
+
+\acknowledgments % equivalent to \section*{ACKNOWLEDGMENTS}       
+ 
+This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
+
+% References
+\bibliography{report} % bibliography data in report.bib
+\bibliographystyle{spiebib} % makes bibtex use spiebib.bst
+
+\end{document} 

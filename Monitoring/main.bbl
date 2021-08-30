@@ -1,0 +1,73 @@
+\begin{thebibliography}{10}
+
+\bibitem{SKAMPI}
+``Skampi - ska mvp prototype integration.''
+  \url{https://gitlab.com/ska-telescope/skampi/}.
+\newblock (Accessed: 21 October 2020).
+
+\bibitem{openstack}
+``Openstack.'' \url{https://www.openstack.org/}.
+\newblock (Accessed: 21 October 2020).
+
+\bibitem{kubernetes}
+``Kubernetes.'' \url{https://kubernetes.io/}.
+\newblock (Accessed: 12 October 2020).
+
+\bibitem{ceph}
+``Ceph.'' \url{https://ceph.io/}.
+\newblock (Accessed: 23 October 2020).
+
+\bibitem{elastic}
+``Elasticsearch.'' \url{https://www.elastic.co/}.
+\newblock (Accessed: 23 October 2020).
+
+\bibitem{prometheus}
+``Prometheus.'' \url{https://prometheus.io/}.
+\newblock (Accessed: 21 October 2020).
+
+\bibitem{tsdb}
+``Tsdb format.''
+  \url{https://github.com/prometheus/prometheus/tree/release-2.22/tsdb/docs/format}.
+\newblock (Accessed: 24 October 2020).
+
+\bibitem{tango-controls}
+``Tango-controls framework.'' \url{https://www.tango-controls.org/}.
+\newblock (Accessed: 5 October 2020).
+
+\bibitem{grafana}
+``Grafana.'' \url{https://grafana.com/}.
+\newblock (Accessed: 24 October 2020).
+
+\bibitem{tangoarchiver}
+``Tango archiver.''
+  \url{https://tango-controls.readthedocs.io/en/latest/tools-and-extensions/archiving/HDB++.html}.
+\newblock (Accessed: 26 October 2020).
+
+\bibitem{tango-grafana}
+``Tango-grafana.'' \url{https://gitlab.com/ska-telescope/TANGO-grafana}.
+\newblock (Accessed: 27 October 2020).
+
+\bibitem{cors}
+``Cross-origin resource sharing.''
+  \url{https://developer.mozilla.org/it/docs/Web/HTTP/CORS}.
+\newblock (Accessed: 27 October 2020).
+
+\bibitem{ryantxu-ajax-panel}
+``Ajax panel for grafana.''
+  \url{https://grafana.com/grafana/plugins/ryantxu-ajax-panel}.
+\newblock (Accessed: 26 October 2020).
+
+\bibitem{tango-rest}
+``Tango rest-api.''
+  \url{https://tango-controls.readthedocs.io/en/latest/development/advanced/rest-api.html}.
+\newblock (Accessed: 26 October 2020).
+
+\bibitem{10.1117/12.2314056}
+Dolci, M., Canzari, M., Carlo, M.~D., and Smareglia, R., ``{Achieving a
+  rolled-up view of SKA TM health status and state: definition and analysis of
+  aggregation methods},'' in [{\em Observatory Operations: Strategies,
+  Processes, and Systems VII}{\nolinebreak\hspace{0.1em}]},  Peck, A.~B.,
+  Seaman, R.~L., and Benn, C.~R., eds.,  {\bf 10704},  182 -- 191,
+  International Society for Optics and Photonics, SPIE (2018).
+
+\end{thebibliography}
