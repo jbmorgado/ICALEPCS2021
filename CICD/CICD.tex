@@ -6,7 +6,7 @@
 \usepackage{graphicx}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
-\title{CI/CD practices with the TANGO-controls framework in the context of the Square Kilometre Array (SKA) telescope project}
+\title{CI-CD Practices at SKA (Square Kilometre Array)}
 
 \author[a]{Di Carlo M.}
 \author[b]{Yilmaz U.}
@@ -30,11 +30,11 @@
 \maketitle
 
 \begin{abstract}
-The Square Kilometre Array (SKA) project is an international effort to build two radio interferometers in South Africa and Australia to form one Observatory monitored and controlled from the global headquarters (GHQ) based in the United Kingdom at Jodrell Bank. The project is now approaching the end of its design phase and gearing up for the beginning of formal construction. The period between the end of the design phase and the start of the construction phase has been called bridging and, one of its main goals is to promote some CI/CD practices among the software development teams. CI/CD is an acronym that stands for continuous integration and continuous delivery and/or continuous deployment. Continuous integration (CI) is the practice of merging all developers local (working) copies into the mainline on a frequent basis (many times per day). Continuous delivery is the approach of developing software in short cycles ensuring that it can be released anytime and continuous deployment is the approach of delivering the software into operational use frequently and automatically. The present paper analyses the decisions taken by the Systems Team (a specialized agile team devoted to developing and maintaining the tools that allow continuous practises) together with SKA architects to promote the CI/CD practices with the TANGO controls framework.
+The Square Kilometre Array (SKA) project is an international effort to build two radio interferometers in South Africa and Australia to form one Observatory monitored and controlled from the global headquarters (GHQ) based in the United Kingdom at Jodrell Bank. There has been a big effort in promoting CI/CD practices among the software development teams. CI/CD is an acronym that stands for continuous integration and continuous delivery and/or continuous deployment. Continuous integration (CI) is the practice of merging all developers local (working) copies into the mainline on a frequent basis (many times per day). Continuous delivery is the approach of developing software in short cycles ensuring that it can be released anytime and continuous deployment is the approach of delivering the software into operational use frequently and automatically. The present paper analyses the decisions taken by the Systems Team (a specialized agile team devoted to developing and maintaining the tools that allow continuous practises) to promote the CI/CD practices with the TANGO controls framework.
 \end{abstract}
 
 % Include a list of keywords after the abstract
-\keywords{CI/CD, SKA, TANGO, Continuous Integration, Continuous Delivery, Systems Team, TANGO controls framework, Bridging, Software Development}
+\keywords{CI/CD, SKA, TANGO, Continuous Integration, Continuous Delivery, Systems Team, TANGO controls framework, Construction, Software Development}
 
 \section{Introduction}
 \label{sec:intro}  % \label{} allows reference to this section
@@ -43,15 +43,6 @@ When creating releases for the end-users, every large software endeavour faces t
 
 In the Square Kilometre Array (SKA) project, The selected development process is SAFe Agile (Scaled Agile framework) that is incremental and iterative with a specialized team (known as the Systems Team) devoted to supporting the Continuous Integration, Continuous Deployment, test automation and quality.
 
-\subsection{TANGO-controls Overview}
-One of the decisions taken by the SKA project is the adoption of the TANGO-controls\cite{tango-controls} framework which is a middleware for connecting software processes together mainly based on the CORBA standard (Common Object Request Broker Architecture), to control physical hardware elements. The standard defines how to exposes the procedures of an object within a software process with the RPC protocol (Remote Procedure Call).  The TANGO framework extends the definition of an object with the concept of a Device which represents a real or virtual device to control.  This exposes commands (that are procedures), and attributes (like the state) and allows both synchronous and asynchronous communication with events generated from the attributes (for instance a change in an attribute value can generate an event). Fig.~\ref{fig:tangodatamodel}  shows a module view of the framework.
-
-\begin{figure}[!htb]
-   \centering
-   \includegraphics*[width=1\columnwidth]{SimplifiedDataModel}
-   \caption{TANGO-Controls simplified data model.}
-   \label{fig:tangodatamodel}
-\end{figure}
 
 \subsection{Continuous Integration (CI)}
 CI refers to a set of development practices that requires developers to integrate code into a shared repository several times a day. Each check-in is then verified by an automated build, allowing teams to detect problems as early as possible with early feedback about the state of the integration.
@@ -79,31 +70,79 @@ Moreover, automation is one of the key elements in implementing a DevOps strateg
 The importance of those practices can be summarized in reducing risks of integration issues, of releasing new software and overall in having a better software product.
 Continuous deployment goes one step further as every single commit (!) to the software that passes all the stages of the build and test pipeline is deployed into the production environment (preferably automatically).
 
-\section{Containerisation} \label{SKA-docker}
+\section{Containerisation} \label{ska-tango-images}
 The \textit{system engineering} development process has been adopted in the initial design phase of the SKA project to reduce the complexity by dividing the project into simpler and easier to resolve elements. For every element of the system, an initial architecture has been developed, which comprises the software modules needed which corresponds to a repository (each of them is a component of the system).
 
-Since all components need to be deployed and tested together, the first decision taken is on how they need to be packaged.  A container is a standard run-time unit of software that packages up code and all its dependencies so that the component runs quickly and reliably across different computing environments. A \textit{Docker container image} is a lightweight, standalone, executable package of software that includes everything needed to run an application: code (or more generally binary), runtime, system tools, system libraries and settings.
+Since all components need to be deployed and tested together, the first decision taken is on how they need to be packaged. A container is a standard run-time unit of software that packages up code and all its dependencies so that the component runs quickly and reliably across different computing environments. A \textit{Docker container image} is a lightweight, standalone, executable package of software that includes everything needed to run an application: code (or more generally binary), runtime, system tools, system libraries and settings. 
 
-The final product will be a containerized application which will be running in a system for managing these kinds of applications. Specifically the selection made for SKA is \textit{Kubernetes (K8s)} for container orchestration~\cite{kubernetes} and \textit{Helm Charts}~\cite{helm} for declaring runtime dependencies for K8s applications. In K8s all deployment elements are resources, that are abstracted away from the underlying infrastructure implementation.  For example these may be a Service (network configuration), a PersistentVolume (file-system type storage) or a simple Pod which is the smallest deployable unit of computing consisting of one (or more) container(s). The resources reside in a cluster (a set of machines connected together) and share a predefined network (for service discovery), storage and other resources like computing power. On the other hand, helm is a tool for managing Kubernetes deployments with charts where a chart is a package of pre-configured Kubernetes resources, married to run-time instance configuration.  Namespaces are an important concept in Kubernetes where they are used to create a logical separation of resources within a shared ulti-tenant environment.  The Namespace enforces a separate network and set of access rights enabling a virtual private space for contained deployment.
-
-The SKA repository \textit{SKA-docker}~\cite{SKA-docker} contains the definitions of a containerized TANGO environment and two Helm Charts: tango-base and archiver. The first one enables the installation of the base services for a TANGO environment such as the MariaDB service container, DatabaseDS service container, and the TANGO test device. The archiver enables the HDB++~\cite{hdb} application which is composed of a MariaDB service container, a configuration manager and an event subscriber. Tango-base and the archiver provide the basic services and tools for developers to easily develop their own tango device servers and applications while maintaining a consistent environment. This project represents the base images from where all repositories in the SKA telescope group can extend from in order to create their docker images to be used in any helm chart. Fig. \ref{fig:ska-docker} shows a diagram for this project. The TANGO-controls becomes a layer inside the base images and every ska module inherits from those images, specifically from the TANGO python image.
+One of the main dependency in the SKA software is the TANGO-controls~\cite{tango-controls} framework which is a middleware for connecting software processes together mainly based on the CORBA standard (Common Object Request Broker Architecture). The standard defines how to exposes the procedures of an object within a software process with the RPC protocol (Remote Procedure Call). The TANGO framework extends the definition of an object with the concept of a Device which represents a real or virtual device to control. This exposes commands (that are procedures), and attributes (like the state) and allows both synchronous and asynchronous communication with events generated from the attributes (for instance a change in an attribute value can generate an event). Fig.~\ref{fig:tangodatamodel} shows a module view of the framework.
 
 \begin{figure}[!htb]
    \centering
-   \includegraphics*[width=0.8\columnwidth]{ska-docker}
-   \caption{SKA-Docker repository}
-   \label{fig:ska-docker}
+   \includegraphics*[width=1\columnwidth]{SimplifiedDataModel}
+   \caption{TANGO-Controls simplified data model.}
+   \label{fig:tangodatamodel}
 \end{figure}
 
+The final product will be a containerized application which will be running in a system for managing these kinds of applications. Specifically the selection made for SKA is \textit{Kubernetes (K8s)} for container orchestration~\cite{kubernetes} and \textit{Helm Charts}~\cite{helm} for declaring runtime dependencies for K8s applications. In K8s all deployment elements are resources, that are abstracted away from the underlying infrastructure implementation. For example these may be a Service (network configuration), a PersistentVolume (file-system type storage) or a simple Pod which is the smallest deployable unit of computing consisting of one (or more) container(s). The resources reside in a cluster (a set of machines connected together) and share a predefined network (for service discovery), storage and other resources like computing power. 
+Helm is a tool for managing Kubernetes deployments with charts where a chart is a package of pre-configured Kubernetes resources, married to run-time instance configuration.  Namespaces are an important concept in Kubernetes where they are used to create a logical separation of resources within a shared ulti-tenant environment. The Namespace enforces a separate network and set of access rights enabling a virtual private space for contained deployment.
+
+
+\subsection{ska-tango-images} 
+
+The TANGO-controls framework offers many specific tools and libraries for its use and, for this reason, a SKA repository called \textit{ska-tango-images}~\cite{ska-tango-images} has been created which incapsulates all its components has been created in some docker images. Fig. \ref{fig:ska-tango-images} shows a diagram (of images) for this project. By extending one of them, the TANGO-controls becomes a layer inside the base images of any SKA module. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{ska-tango-images}
+   \caption{SKA-tango-images repository}
+   \label{fig:ska-tango-images}
+\end{figure}
+
+The SKA repository \textit{ska-tango-images} contains also the definitions two Helm Charts: \textit{ska-tango-base} and \textit{ska-tango-util}.
+
+The \textit{ska-tango-base} helm chart is an application chart which defines the basic TANGO ecosystem in kubernetes. In specific it defines the following k8s services:
+\begin{itemize}
+    \item tangodb: it is a mysql database used to store configuration data used at startup of a device server.
+    \item databaseds: it is a device server providing configuration information to all other components of the system as well as a runtime catalog of the components/devices.
+    \item itango: it is an interactive Tango client.
+    \item vnc: it is a debian environment with x11 server and vnc/novnc installed on it.
+    \item tangorest: it defines the rest api for the TANGO eco-system.
+    \item tangotest: it is the tango test device server.
+\end{itemize}
+
+The \textit{ska-tango-util}, instead, is a library chart which helps other application chart defines TANGO device servers. In specific, it defines the following helm named template:
+\begin{itemize}
+    \item multidevice-config: it creates a k8s ConfigMap which contains the generated dsconfig json configuration file, the boostrap script for the dsconfig application and a python script for multi class device server startup;
+    \item multidevice-job: it creates a job for the dsconfig application to apply a configuration json file set into the values file;
+    \item multidevice-sacc-role: it creates a k8s service account, a role and role binding for waiting the configuration job to be done;
+    \item multidevice-svc: it creates a k8s service and a k8s statefulset for a device server tag specified in the values file.
+\end{itemize}
 
 Every Helm Chart contains at a minimum the information concerning the version of the docker image and the pull policy (retrieval rule for the image) for the deployment. It also contains the necessary information to correctly initialize the TANGO database (configuration of devices) and how it is exposed to other applications for discovery in the cluster.
 
-Throughout the SKA repositories, \textit{Makefiles} are selected as an abstraction and organisation layer to eliminate language-specific scripts for building, testing and deployment and to promote ease of use in CI/CD. The use of a \textit{Makefile} in each project simplifies the work of containerisation and, overall, the automation of the code building, testing and packaging processes. In fact, with one single command, it is possible to compile the project, generate the docker image and test it by dynamically installing the related Helm Chart for that purpose.
+As any other SKA repositories, \textit{Makefiles} are selected as an abstraction and organisation layer to eliminate language-specific scripts for building, testing and deployment and to promote ease of use in CI/CD. The use of a \textit{Makefile} in each project simplifies the work of containerisation and, overall, the automation of the code building, testing and packaging processes. In fact, with one single command, it is possible to compile the project, generate the docker image and test it by dynamically installing the related Helm Chart for that purpose.
 The Makefile also enables the publishing of the docker images and Helm Charts to the SKA artefact repository and, in general, it also promotes the reusability of same build toolchain in different environments such as local development and CI/CD lifecycle.
+
+\section{SKA infrastructure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics*[width=0.8\columnwidth]{k8s}
+    \caption{Kubernetes components}
+    \label{fig:k8s}
+ \end{figure}
+
+ \begin{figure}[!htb]
+    \centering
+    \includegraphics*[width=0.8\columnwidth]{stfc-cloud-component}
+    \caption{STFC cloud components}
+    \label{fig:stfc-cloud-component}
+ \end{figure}
 
 \section{Sub-charts Architecture}
 
-\subsection{Introduction to Helm} \label{helm}
+\subsection{Helm dependencies} \label{helm}
 A chart can have one or more chart dependencies, called sub-charts. According to the Helm documentation:
 \begin{itemize}
     \item a sub-chart is stand-alone (cannot depend on a parent chart),
@@ -256,6 +295,19 @@ As a result, the selected development workflow for SKA is the following:
         \item Publishes the successfully build artefacts to the artefact repository
     \end{itemize}
 \end{itemize}
+
+
+
+\section{CI-CD automation and quality}
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics*[width=0.8\columnwidth]{CICD-automation-quality}
+    \caption{CI-CD automation framework}
+    \label{fig:CICD-automation-quality}
+ \end{figure}
+
 
 \section{Conclusion}
 The majority of the decisions taken by the Systems Team follow the workflow as described by the Continuous Integration process outlined in Martin Fowler’s paper and inspired by the state-of-the-art industry practices of \cite{DevOps, CI, CD}. In particular:
