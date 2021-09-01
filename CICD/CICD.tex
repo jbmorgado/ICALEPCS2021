@@ -1,32 +1,76 @@
-\documentclass[a4paper]{spie}  %>>> use this instead for A4 paper
+% !TeX spellcheck = en_GB
+% !TeX program = lualatex
+%
+% v 2.3  Feb 2019   Volker RW Schaa
+%		# changes in the collaboration therefore updated file "jacow-collaboration.tex"
+%		# all References with DOIs have their period/full stop before the DOI (after pp. or year)
+%		# in the author/affiliation block all ZIP codes in square brackets removed as it was not %         understood as optional parameter and ZIP codes had bin put in brackets
+%       # References to the current IPAC are changed to "IPAC'19, Melbourne, Australia"
+%       # font for ‘url’ style changed to ‘newtxtt’ as it is easier to distinguish "O" and "0"
+%
+\documentclass[a4paper,
+               %boxit,        % check whether paper is inside correct margins
+               %titlepage,    % separate title page
+               %refpage       % separate references
+               %biblatex,     % biblatex is used
+               keeplastbox,   % flushend option: not to un-indent last line in References
+               %nospread,     % flushend option: do not fill with whitespace to balance columns
+               %hyphens,      % allow \url to hyphenate at "-" (hyphens)
+               %xetex,        % use XeLaTeX to process the file
+               %luatex,       % use LuaLaTeX to process the file
+               ]{jacow}
+%
+% ONLY FOR \footnote in table/tabular
+%
+\usepackage{pdfpages,multirow,ragged2e} %
+%
+% CHANGE SEQUENCE OF GRAPHICS EXTENSION TO BE EMBEDDED
+% ----------------------------------------------------
+% test for XeTeX where the sequence is by default eps-> pdf, jpg, png, pdf, ...
+%    and the JACoW template provides JACpic2v3.eps and JACpic2v3.jpg which
+%    might generates errors, therefore PNG and JPG first
+%
+\makeatletter%
+	\ifboolexpr{bool{xetex}}
+	 {\renewcommand{\Gin@extensions}{.pdf,%
+	                    .png,.jpg,.bmp,.pict,.tif,.psd,.mac,.sga,.tga,.gif,%
+	                    .eps,.ps,%
+	                    }}{}
+\makeatother
 
-\renewcommand{\baselinestretch}{1.0} % Change to 1.65 for double spacing
+% CHECK FOR XeTeX/LuaTeX BEFORE DEFINING AN INPUT ENCODING
+% --------------------------------------------------------
+%   utf8  is default for XeTeX/LuaTeX
+%   utf8  in LaTeX only realises a small portion of codes
+%
+\ifboolexpr{bool{xetex} or bool{luatex}} % test for XeTeX/LuaTeX
+ {}                                      % input encoding is utf8 by default
+ {\usepackage[utf8]{inputenc}}           % switch to utf8
 
-\usepackage{amsmath,amsfonts,amssymb}
-\usepackage{graphicx}
-\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage[USenglish]{babel}
 
-\title{CI-CD Practices at SKA (Square Kilometre Array)}
+%
+% if BibLaTeX is used
+%
+\ifboolexpr{bool{jacowbiblatex}}%
+ {%
+  \addbibresource{jacow-test.bib}
+  \addbibresource{biblatex-examples.bib}
+ }{}
+\listfiles
 
-\author[a]{Di Carlo M.}
-\author[b]{Yilmaz U.}
-\author[b]{Harding P.}
-\author[b]{Bartolini M.}
-\author[c]{Le Roux G.}
-\author[a]{Dolci M.}
+%%
+%%   Lengths for the spaces in the title
+%%   \setlength\titleblockstartskip{..}  %before title, default 3pt
+%%   \setlength\titleblockmiddleskip{..} %between title + author, default 1em
+%%   \setlength\titleblockendskip{..}    %afterauthor, default 1em
 
-\affil[a]{INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy}
-\affil[b]{SKA Organisation, Macclesfield, UK}
-\affil[c]{SKA South Africa, SA}
-
-\authorinfo{Further author information: (Send correspondence to Di Carlo M.)\\Di Carlo M.: E-mail: matteo.dicarlo@inaf.it\\  Dolci M.: E-mail: mauro.dolci@inaf.it\\ Harding P.: E-mail: P.Harding@skatelescope.org\\ Bartolini M.: E-mail: M.Bartolini@skatelescope.org\\ Yilmaz U.: E-mail: u.yilmaz@skatelescope.org}
-
-% Option to view page numbers
-\pagestyle{empty} % change to \pagestyle{plain} for page numbers
-\setcounter{page}{301} % Set start page numbering at e.g. 301
-
-\usepackage{xcolor}
 \begin{document}
+
+\author{M. Di Carlo\thanks{matteodicarlo@gmail.com}, INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy \\
+        P. Harding\textsuperscript{1}, U. Yilmaz, M. Bartolini, SKA Organisation, Macclesfield, UK \\
+        G. Le Roux, SKA South Africa, SA}
+
 \maketitle
 
 \begin{abstract}
@@ -79,7 +123,7 @@ One of the main dependency in the SKA software is the TANGO-controls~\cite{tango
 
 \begin{figure}[!htb]
    \centering
-   \includegraphics*[width=1\columnwidth]{SimplifiedDataModel}
+   \includegraphics*[width=.7\columnwidth]{SimplifiedDataModel}
    \caption{TANGO-Controls simplified data model.}
    \label{fig:tangodatamodel}
 \end{figure}
@@ -126,6 +170,17 @@ The Makefile also enables the publishing of the docker images and Helm Charts to
 
 \section{SKA infrastructure}
 
+The SKA infrastructure consists of a standard footprint of VPN/SSH JumpHost gateway, Monitoring, Logging, Storage and Kubernetes services to support the GitLab runner architecture, and MVP testing facilities as shown in Fig.~\ref{fig:stfc-cloud-component} used to support DevOps and Integration testing facilities.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics*[width=0.8\columnwidth]{stfc-cloud-component}
+    \caption{STFC cloud components}
+    \label{fig:stfc-cloud-component}
+ \end{figure}
+
+ An initial Kubernetes cluster has been deployed with the 1x loadbalancer, 3x master, and 6x worker configuration. Fig.~\ref{fig:k8s} illustrates how the load balancer ties the Kubernetes services together and exposes deployed applications such as Ingresses to the outside world.  The API Server is exposed externally from Terminus using TCP pass-through, and the NGiNX Ingress Controller is SSL terminated for external user access.  These services are exposed using an NGiNX reverse proxy.  The Ingress access on port 443 is password protected using oauth2-proxy integration with GitLab.
+
 \begin{figure}[!htb]
     \centering
     \includegraphics*[width=0.8\columnwidth]{k8s}
@@ -133,12 +188,14 @@ The Makefile also enables the publishing of the docker images and Helm Charts to
     \label{fig:k8s}
  \end{figure}
 
- \begin{figure}[!htb]
+The Kubernetes runner ~\cite{gitlabrunner} works as a multiplexer that receives requests from GitLab for jobs, and then launches Pods for each one up to a configured scaling limit (currently 15 concurrent jobs). GitLab runners use an intermediate cache to speed up jobs by passing dependencies between them.  The cache for this is based on Minio which presents S3 compatible buckets for storage.
+
+\begin{figure}[!htb]
     \centering
-    \includegraphics*[width=0.8\columnwidth]{stfc-cloud-component}
-    \caption{STFC cloud components}
-    \label{fig:stfc-cloud-component}
- \end{figure}
+    \includegraphics*[width=0.8\columnwidth]{gitlab-runner}
+    \caption{Gitlab runner}
+    \label{fig:gitlab-runner}
+\end{figure}
 
 \section{Sub-charts Architecture}
 
@@ -296,8 +353,6 @@ As a result, the selected development workflow for SKA is the following:
     \end{itemize}
 \end{itemize}
 
-
-
 \section{CI-CD automation and quality}
 
 
@@ -326,8 +381,6 @@ In addition, with the new sub-charts architecture, integration testing is done w
 
 This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
 
-% References
-\bibliography{report} % bibliography data in report.bib
-\bibliographystyle{spiebib} % makes bibtex use spiebib.bst
-
+\include{bib}
+ 
 \end{document}
