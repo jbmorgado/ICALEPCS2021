@@ -67,6 +67,8 @@
 
 \begin{document}
 
+\title{CI-CD Practices at SKA}
+
 \author{M. Di Carlo\thanks{matteodicarlo@gmail.com}, INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy \\
         P. Harding\textsuperscript{1}, U. Yilmaz, M. Bartolini, SKA Organisation, Macclesfield, UK \\
         G. Le Roux, SKA South Africa, SA}
@@ -76,9 +78,6 @@
 \begin{abstract}
 The Square Kilometre Array (SKA) project is an international effort to build two radio interferometers in South Africa and Australia to form one Observatory monitored and controlled from the global headquarters (GHQ) based in the United Kingdom at Jodrell Bank. There has been a big effort in promoting CI/CD practices among the software development teams. CI/CD is an acronym that stands for continuous integration and continuous delivery and/or continuous deployment. Continuous integration (CI) is the practice of merging all developers local (working) copies into the mainline on a frequent basis (many times per day). Continuous delivery is the approach of developing software in short cycles ensuring that it can be released anytime and continuous deployment is the approach of delivering the software into operational use frequently and automatically. The present paper analyses the decisions taken by the Systems Team (a specialized agile team devoted to developing and maintaining the tools that allow continuous practises) to promote the CI/CD practices with the TANGO controls framework.
 \end{abstract}
-
-% Include a list of keywords after the abstract
-\keywords{CI/CD, SKA, TANGO, Continuous Integration, Continuous Delivery, Systems Team, TANGO controls framework, Construction, Software Development}
 
 \section{Introduction}
 \label{sec:intro}  % \label{} allows reference to this section
@@ -363,6 +362,8 @@ As a result, the selected development workflow for SKA is the following:
     \label{fig:CICD-automation-quality}
  \end{figure}
 
+ \section{ACKNOWLEDGEMENTS}
+ This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
 
 \section{Conclusion}
 The majority of the decisions taken by the Systems Team follow the workflow as described by the Continuous Integration process outlined in Martin Fowler’s paper and inspired by the state-of-the-art industry practices of \cite{DevOps, CI, CD}. In particular:
@@ -377,10 +378,74 @@ The majority of the decisions taken by the Systems Team follow the workflow as d
 
 In addition, with the new sub-charts architecture, integration testing is done within the repositories of teams and brought in to the SKAMPI integration testing repository when a new version is created.  This enables developers to test not only their own work in isolation but also their work in conjunction with the developments contributed by other teams.
 
-\acknowledgments % equivalent to \section*{ACKNOWLEDGMENTS}
+\ifboolexpr{bool{jacowbiblatex}}%
+	{\printbibliography}%
+	{%
+	% "biblatex" is not used, go the "manual" way
+	
+	%\begin{thebibliography}{99}   % Use for  10-99  references
+	\begin{thebibliography}{99} % Use for 1-9 references
+	
+	\bibitem{TANGO-controls}
+		TANGO-controls,
+		\url{https://www.tango-controls.org/}
+	
+	\bibitem{CI}
+		Martin Fowler, Continuous Integration,
+		\url{https://martinfowler.com/articles/continuousIntegration.html}
+		
+	\bibitem{CD}
+	    J. Humble, D. Farley, "Continuous Delivery: Reliable Software Releases Through Build, Test, and Deployment Automation",
+	    2010, ISBN (0321601912, 9780321601919), Pub. Addison-Wesley Professional
+	
+	\bibitem{DevOps}
+	    G. Kim, P. Debois, J. Willis, J. Humble, "The DevOps Handbook: How to Create World-Class Agility, Reliability, and Security in Technology Organizations", ISBN (1942788002 9781942788003)
 
-This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
+	\bibitem{Kubernetes}
+		Kubernetes,
+		\url{https://kubernetes.io/}
 
-\include{bib}
+	\bibitem{Nexus}
+		Nexus,
+		\url{https://www.sonatype.com/nexus/repository-pro/}
+
+	\bibitem{elastcsearch}
+		Elasticsearch,
+		\url{https://www.elastic.co/}
+
+	\bibitem{prometheus}
+		Prometheus,
+		\url{https://prometheus.io/}
+
+	\bibitem{ceph}
+		Ceph Storage,
+		\url{https://ceph.io/}
+
+	\bibitem{helm}
+		Helm,
+		\url{https://helm.sh}
+
+	\bibitem{gitlab}
+		Gitlab,
+		\url{https://gitlab.com/}
+
+	\bibitem{ansible}
+		Ansible,
+		\url{https://www.ansible.com/}
+
+	\bibitem{SKAMPI}
+		SKAMPI - SKA Mvp Prototype Integration,
+		\url{https://gitlab.com/ska-telescope/ska-skampi}
+
+	\bibitem{ska-tango-images}
+		ska-tango-images repository,
+		\url{https://gitlab.com/ska-telescope/ska-tango-images}
+
+	\bibitem{gitlabrunner}
+		Gitlab Runner,
+		\url{https://gitlab.com/ska-telescope/sdi/deploy-gitlab-runners/}
+
+	\end{thebibliography}
+}
  
 \end{document}
