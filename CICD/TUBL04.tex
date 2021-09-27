@@ -163,7 +163,7 @@ The \textit{ska-tango-util}, instead, is a library chart which helps other appli
     \item multidevice-svc: it creates a k8s service and a k8s statefulset for a device server tag specified in the values file.
 \end{itemize}
 
-Every Helm Chart contains the minimum of information concerning the version of the docker image and the pull policy (retrieval rule for the image) for the deployment. It also contains the necessary information to correctly initialize the TANGO database (configuration of devices) and how it is exposed to other applications for discovery in the cluster.
+Every Helm Chart contains at a minimum the information concerning the version of the docker image and the pull policy (retrieval rule for the image) for the deployment. It also contains the necessary information to correctly initialize the TANGO database (configuration of devices) and how it is exposed to other applications for discovery in the cluster.
 
 As any other SKA repositories, \textit{Makefiles} are selected as an abstraction and organisation layer to eliminate language-specific scripts for building, testing and deployment and to promote ease of use in CI/CD. The use of a \textit{Makefile} in each project simplifies the work of containerisation and, overall, the automation of the code building, testing and packaging processes. In fact, with one single command, it is possible to compile the project, generate the docker image and test it by dynamically installing the related Helm Chart for that purpose.
 The Makefile also enables the publishing of the docker images and Helm Charts to the SKA artefact repository and, in general, it also promotes the reusability of same build toolchain in different environments such as local development and CI/CD lifecycle.
