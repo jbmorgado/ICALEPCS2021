@@ -71,7 +71,8 @@
 
 \author{M. Di Carlo\thanks{matteodicarlo@gmail.com}, INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy \\
         P. Harding\textsuperscript{1}, U. Yilmaz, M. Bartolini, SKA Organisation, Macclesfield, UK \\
-        G. Le Roux, SKA South Africa, SA}
+        G. Le Roux, SKA South Africa, SA \\
+        B. Ribeiro, Instituto de Telecomunicações Aveiro, PT}
 
 \maketitle
 
@@ -128,7 +129,7 @@ One of the main dependency in the SKA software is the TANGO-controls~\cite{tango
 \end{figure}
 
 The final product will be a containerized application which will be running in a system for managing these kinds of applications. Specifically the selection made for SKA is \textit{Kubernetes (K8s)} for container orchestration~\cite{kubernetes} and \textit{Helm Charts}~\cite{helm} for declaring runtime dependencies for K8s applications. In K8s all deployment elements are resources, that are abstracted away from the underlying infrastructure implementation. For example these may be a Service (network configuration), a PersistentVolume (file-system type storage) or a simple Pod which is the smallest deployable unit of computing consisting of one (or more) container(s). The resources reside in a cluster (a set of machines connected together) and share a predefined network (for service discovery), storage and other resources like computing power. 
-Helm is a tool for managing Kubernetes deployments with charts where a chart is a package of pre-configured Kubernetes resources, married to run-time instance configuration.  Namespaces are an important concept in Kubernetes where they are used to create a logical separation of resources within a shared ulti-tenant environment. The Namespace enforces a separate network and set of access rights enabling a virtual private space for contained deployment.
+Helm is a tool for managing Kubernetes deployments with charts where a chart is a package of pre-configured Kubernetes resources, married to run-time instance configuration.  Namespaces are an important concept in Kubernetes where they are used to create a logical separation of resources within a shared multi-tenant environment. The Namespace enforces a separate network and set of access rights enabling a virtual private space for contained deployment.
 
 
 \subsection{ska-tango-images} 
@@ -355,12 +356,75 @@ As a result, the selected development workflow for SKA is the following:
 \section{CI-CD automation and quality}
 
 
+To verify if all the best practices are being followed, plugins and tasks were implemented to perform quality checks on Gitlab merge requests and on the artefacts published to nexus. Fig.~\ref{fig:CICD-automation-quality} shows a module’s view of the frameworks used to perform these quality checks. 
+
 \begin{figure}[!htb]
     \centering
     \includegraphics*[width=0.8\columnwidth]{CICD-automation-quality}
     \caption{CI-CD automation framework}
     \label{fig:CICD-automation-quality}
  \end{figure}
+ 
+ In the Modules view it is possible to see three main modules:
+ 
+ \begin{itemize}
+    \item \textbf{ska-cicd-services-api:} This module includes all the APIs that will be used in the other two modules. These APIs will allow the two other modules to communicate with Gitlab (i.e create MR, check project information, etc..), Slack (i.e. Send messages to slack channels), Jira (i.e. Get projects) and Nexus ( Get component Information, Get a list of Components, etc)
+    \item \textbf{ska-cicd-automation:} This module uses FastAPI ~\cite{fastapi} to build an Python web Framework. This Framework has 3 plugins: \textbf{gitlab\_mr} used to check MR quality and provide feedback, \textbf{jira\_support} to handle Jira operations and \textbf{nexus\_webhook} used to manage the SKA artefacts publish on nexus triggering a webhook every time a new artefact is published
+    \item \textbf{ska-cicd-artefact-validations:} This module contains a Celery Main Server ~\cite{celery}, being that a Server to manage tasks in a queue format. This Main server uses a main celery task that is triggered by a Redis message, sent by the nexus\_webhook plugin, and then it sets off multiple other sub-tasks
+ \end{itemize}
+ 
+ 
+ \subsection{Merge Request Quality Checks}
+ 
+ To ensure that every developer is following the development workflow and best practices, automated checks are performed to the created Merge Requests. A webhook was added to the ska-telescope Gitlab group, and every time a new Merge Request is created the webhook triggers the SKA MR Service. The \textit{ska-cicd-automation} project will launch in the pipeline three pods to a k8s cluster that is hosted in AWS. One pod is launched for each plugin in the \textit{ska-cicd-automation} module. The quality checks for the Merge Request will verify if:
+ 
+ \begin{itemize}
+     \item The Merge Request Settings were set correctly
+     \item The branch name, the commit messages and the merge request have a Jira Ticket ID
+     \item The project has a proper license
+     \item The project as documentation on it and if it was updated
+     \item The project has pipelines with the needed jobs
+ \end{itemize}
+ 
+ After the checks are performed the result of the checks are reported back to the developers in the main Merge Request page on GitLab via a comment. Fig. \ref{fig:marvin-table} represents an example of the comment, it includes a table with the severity of the failed check, a little description about the check and the mitigation strategy, so the developer can easily mitigate the problem to follow the development workflow and best practices. 
+ 
+ \begin{figure}[!htb]
+    \centering
+    \includegraphics*[width=0.8\columnwidth]{marvin-table}
+    \caption{Checks results table}
+    \label{fig:marvin-table}
+ \end{figure}
+ 
+
+\subsection{Nexus Artefact Validation}
+
+There are a lot of packaged code artefacts of multiple formats being created in the SKA Project, these artefacts are hosted inside Gitlab and then published to the Nexus Artifact repository. These artefacts should follow the SKAO naming and version conventions and include Metadata in them as well. The artefact names should be complaint with ADR-25, the versions should follow the Semantic Versioning 2.0.0 and all artefacts must include associated metadata with the required information, such as the person who published the artefacts, from which Gitlab repository is this artefact coming from and other useful information.
+
+To ensure that the guidelines and policies described are followed for a consistent, compliant and robust artefact management, there are a series of automated validations in place. If an artefact fails the validation, then it is moved to a quarantine state and the results of the checks are reported back to the developers that triggered the pipeline that published the artefact. The report to the developer is made by creating a newly Merge Request where the developer is made assignee and the description of the Merge Request has a table composed of the failed validations and instructions on how to mitigate them.
+
+To execute the artefact validations three types of pods are launched from the \textit{ska-cicd-artefact-validation} project pipeline. There are launched four validation pods that contain the Celery Main Server, the replicaCount from this pod is four to help with the high traffic that may occur when multiple people publish artefacts at the same time. There are also launched pods with MongoDB to store the information about the artefacts and the validation results, and pods with Redis to communicate with the celery tasks.
+
+Fig. \ref{fig:Artefact-Validation-Workflow} has a state machine diagram that shows the artefact workflow from when it gets published on the Gitlab Job until it gets quarantined or pass all the checks. In the diagram the celery sub-tasks are represented in blue, and this tasks have the following role:
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics*[width=0.8\columnwidth]{Artefact-Validation-Workflow}
+    \caption{Artefact Validation Workflow}
+    \label{fig:Artefact-Validation-Workflow}
+ \end{figure}
+
+\begin{itemize}
+    \item \textbf{Validation Task:} Task that performs the validation checks 
+    \item \textbf{Get Metadata Task:} Task used to extract the metadata from the artefacts in case that they have it
+    \item \textbf{Container Scanning Task:} Task that scans container vulnerabilities using trivy
+    \item \textbf{Quarantine Task:} Task that quarantines the artefacts if any of the checks fail
+    \item \textbf{Create MR Task:} Task that creates the MR to report the failures to the developers
+    \item \textbf{Insert DB Task:} Task that inserts metadata into MongoDB about the artefacts published
+\end{itemize}
+
+With this automated workflow, it is possible to keep and maintain a clean and organized repository, where all artefacts follow the guidelines and policies defined on the project.
+
+
 
  \section{ACKNOWLEDGEMENTS}
  This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
@@ -444,6 +508,15 @@ In addition, with the new sub-charts architecture, integration testing is done w
 	\bibitem{gitlabrunner}
 		Gitlab Runner,
 		\url{https://gitlab.com/ska-telescope/sdi/deploy-gitlab-runners/}
+		
+	\bibitem{fastapi}
+		FastAPI,
+		\url{https://fastapi.tiangolo.com/}
+	
+	\bibitem{celery}
+		Celery,
+		\url{https://docs.celeryproject.org/en/stable}
+
 
 	\end{thebibliography}
 }
