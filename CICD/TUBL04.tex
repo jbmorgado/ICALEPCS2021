@@ -71,7 +71,6 @@
 
 \author{M. Di Carlo\thanks{matteodicarlo@gmail.com}, INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy \\
         P. Harding\textsuperscript{1}, U. Yilmaz, M. Bartolini, SKA Organisation, Macclesfield, UK \\
-        G. Le Roux, SKA South Africa, SA \\
         B. Ribeiro, Instituto de Telecomunicações Aveiro, PT}
 
 \maketitle
@@ -425,10 +424,6 @@ Fig. \ref{fig:Artefact-Validation-Workflow} has a state machine diagram that sho
 With this automated workflow, it is possible to keep and maintain a clean and organized repository, where all artefacts follow the guidelines and policies defined on the project.
 
 
-
- \section{ACKNOWLEDGEMENTS}
- This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
-
 \section{Conclusion}
 The majority of the decisions taken by the Systems Team follow the workflow as described by the Continuous Integration process outlined in Martin Fowler’s paper and inspired by the state-of-the-art industry practices of \cite{DevOps, CI, CD}. In particular:
 \begin{itemize}
@@ -442,6 +437,9 @@ The majority of the decisions taken by the Systems Team follow the workflow as d
 
 In addition, with the new sub-charts architecture, integration testing is done within the repositories of teams and brought in to the SKAMPI integration testing repository when a new version is created.  This enables developers to test not only their own work in isolation but also their work in conjunction with the developments contributed by other teams.
 
+\section{ACKNOWLEDGEMENTS}
+This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
+
 \ifboolexpr{bool{jacowbiblatex}}%
 	{\printbibliography}%
 	{%
@@ -450,7 +448,7 @@ In addition, with the new sub-charts architecture, integration testing is done w
 	%\begin{thebibliography}{99}   % Use for  10-99  references
 	\begin{thebibliography}{99} % Use for 1-9 references
 	
-	\bibitem{TANGO-controls}
+	\bibitem{tango-controls}
 		TANGO-controls,
 		\url{https://www.tango-controls.org/}
 	
@@ -465,11 +463,11 @@ In addition, with the new sub-charts architecture, integration testing is done w
 	\bibitem{DevOps}
 	    G. Kim, P. Debois, J. Willis, J. Humble, "The DevOps Handbook: How to Create World-Class Agility, Reliability, and Security in Technology Organizations", ISBN (1942788002 9781942788003)
 
-	\bibitem{Kubernetes}
+	\bibitem{kubernetes}
 		Kubernetes,
 		\url{https://kubernetes.io/}
 
-	\bibitem{Nexus}
+	\bibitem{nexus}
 		Nexus,
 		\url{https://www.sonatype.com/nexus/repository-pro/}
 
