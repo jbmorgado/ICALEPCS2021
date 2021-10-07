@@ -235,14 +235,14 @@ The entry point of the diagram is the Pipeline box that is composed of many jobs
 \begin{itemize}
     \item Linting, where code is analysed against a set (or multiple sets) of coding rules in order to check if it follows the best practices decided;
     \item Build, where code is compiled and a container image is created;
-    \item Test, where the compiled package (and container image) are tested; tests are grouped into two main categories, the one can run without the application deployed and other that needs the software running to be run.
+    \item Test, where the compiled package (and container image) are tested;
     \item Publish, where the code artefacts are published;
     \item Pages, where any kind of test results are published (note: the name comes directly from the GitLab technology).
 \end{itemize}
 
 The pipeline is respected as the main hub of the software development in which code is built, tested, verified, published and integrated. The above steps are used in local development (as same shell scripts are available thanks to the \textit{Makefile} targets), merge workflow, QA, integration and release. Moreover, by having an almost identical platform environment for different stages of the software lifecycle, sufficient differences between development and operations are eliminated.
 
-Fig.\ref{fig:cicdruntime} shows (without a specific formalism) the run-time behaviour of the selected technologies working together. At the centre of the diagram, there is a Kubernetes cluster defined for every project in the SKA telescope group. Outside the K8s cluster, there are the GitLab code repositories and Pages\cite{gitlab}, the Nexus Artifact repository\cite{nexus} to store packaged code artefacts, the ELK stack (Elasticsearch, Logstash and Kibana)\cite{elastcsearch} for logging, prometheus\cite{prometheus} for monitoring (metric collection) and Ceph\cite{ceph} for a distributed storage solution.
+Fig.\ref{fig:cicdruntime} shows (without a specific formalism) the run-time behaviour of the selected technologies working together. At the centre of the diagram, there is a Kubernetes cluster defined for every project in the SKA telescope group. Outside the K8s cluster, there are the GitLab code repositories and Pages, the Nexus Artifact repository\cite{nexus} to store packaged code artefacts, the ELK stack (Elasticsearch, Logstash and Kibana)\cite{elastcsearch} for logging, prometheus\cite{prometheus} for monitoring (metric collection) and Ceph\cite{ceph} for a distributed storage solution.
 Inside the cluster, in an isolated K8s Namespace, there are the GitLab runners related K8s resources which check every 30 seconds, if there are pending pipelines triggered manually or pulled by the resources. If the runner finds a pipeline, it creates a K8s Pod for each job defined in the configuration file (and part of the git revision). Each created Pod can (potentially) deploy a (umbrella) chart needed for the specific testing of the repository in an isolated Namespace (i.e. an isolated environment). The deployment installed can then be tested and the result of the job will be reported to GitLab producing artefacts that will be stored in the correct artefact repository. During any stage of the pipeline, jobs could also download required dependencies from the artefact repository. Depending on the type of job, the pipeline is also used for deploying the permanently running version of SKAMPI or any other resources that are needed. The Kubernetes cluster is also equipped with monitoring solutions to examine the health and performance of the cluster and any resources that are deployed in it. Storage and logging solutions are also integrated to provide a consistent logging and distributed storage framework for the resources as needed. Finally, this architecture for creating temporal K8s resources for the pipeline steps (testing, building, packaging, etc.) ensures that necessary environments for the jobs are always clean (not affected by the previously run pipelines).
 
 \begin{figure}[!htb]
@@ -254,7 +254,7 @@ Inside the cluster, in an isolated K8s Namespace, there are the GitLab runners r
 
 \section{Testing}
 The most important best practice for CI is testing so the main question now is how a generic component of the SKA can be tested within the above architecture?
-In the SKA, testing has been split into two distinct types: pre-deployment and post-deployment tests. The deployment happens when a runner executes a job with an Gitlab environment keyword. By doing so, the job is linked to the K8s cluster \textit{syscore} through GitLab configuration.
+In the SKA, testing has been split into two distinct types: pre-deployment and post-deployment tests. The deployment happens when a runner executes a job with an Gitlab environment keyword. By doing so, the job is linked to the K8s cluster through GitLab configuration.
 While the pre-deployment tests (namely unit tests) are all made without the real system online (using stubs and mocks), the other tests (namely integration and system tests) need more than one live system component to be up and running as the tests are mostly using other services and applications.
 The SKA is composed of many different modules, each of them with its own repository and different requirements for the components needed for its integration and system testing. For each of them, an umbrella chart has been introduced which enabled the specific component to be deployed together with its dependencies.
 Specifically, to enable the GitLab pipeline to deploy and test the chosen component each repository must:
@@ -264,7 +264,9 @@ Specifically, to enable the GitLab pipeline to deploy and test the chosen compon
     \item have a Makefile for K8s testing
 \end{itemize}
 
-The test job, introduced in section \ref{pipeline}, is composed of the following steps (all made with the help of a Makefile):
+A set of templates and standardized Makefiles has been developed by the system team so the only need to to include them in the repository. 
+
+The post deployment test job is composed of the following steps (all made with the help of a Makefile):
 \begin{itemize}
     \item install: installs the chart (with the sub-charts needed) in the Namespace specified in the environment
     \item wait: wait for every container to be running
@@ -297,7 +299,7 @@ As a result, the selected development workflow for SKA is the following:
         \item Provide feedback about coverage metrics
     \end{itemize}
     \item Once all tests execute successfully on the branch, the developer makes a pull request (\textit{i.e. Merge Request in GitLab terms}) for merging the changes into master.
-    \item As part of the pull request, the code is reviewed and approved by other developers.
+    \item As part of the pull request, the code is reviewed and approved by other developers
     \item Code is merged into the master branch
     \item Then, the CI server (GitLab)
     \begin{itemize}
@@ -311,8 +313,7 @@ As a result, the selected development workflow for SKA is the following:
 
 \section{CI-CD automation and quality}
 
-
-To verify if all the best practices are being followed, plugins and tasks were implemented to perform quality checks on Gitlab merge requests and on the artefacts published to nexus. Fig.\ref{fig:CICD-automation-quality} shows a module’s view of the frameworks used to perform these quality checks. 
+To verify if all the best practices are being followed, plugins and tasks were implemented to perform quality checks on Gitlab merge requests and on the artefacts published to nexus. Fig.\ref{fig:CICD-automation-quality} shows a modules view of the frameworks used to perform these quality checks. 
 
 \begin{figure}[!htb]
     \centering
@@ -321,25 +322,24 @@ To verify if all the best practices are being followed, plugins and tasks were i
     \label{fig:CICD-automation-quality}
  \end{figure}
  
- In the Modules view it is possible to see three main modules:
+ In the above diagram it is possible to see three main packages:
  
  \begin{itemize}
-    \item \textbf{ska-cicd-services-api:} This module includes all the APIs that will be used in the other two modules. These APIs will allow the two other modules to communicate with Gitlab (i.e create MR, check project information, etc..), Slack (i.e. Send messages to slack channels), Jira (i.e. Get projects) and Nexus ( Get component Information, Get a list of Components, etc)
-    \item \textbf{ska-cicd-automation:} This module uses FastAPI \cite{fastapi} to build an Python web Framework. This Framework has 3 plugins: \textbf{gitlab\_mr} used to check MR quality and provide feedback, \textbf{jira\_support} to handle Jira operations and \textbf{nexus\_webhook} used to manage the SKA artefacts publish on nexus triggering a webhook every time a new artefact is published
-    \item \textbf{ska-cicd-artefact-validations:} This module contains a Celery Main Server \cite{celery}, being that a Server to manage tasks in a queue format. This Main server uses a main celery task that is triggered by a Redis message, sent by the nexus\_webhook plugin, and then it sets off multiple other sub-tasks
+    \item \textbf{ska-cicd-services-api}\cite{ska-cicd-services-api} which includes all the APIs that will be used in the other two packages. These APIs will allow the communicate with Gitlab (i.e for merge request creation or for project information, etc), Slack\cite{slack} (i.e. for sending messages to channels), Jira \cite{jira} (i.e. for projects information) and Nexus (i.e. for getting component information);
+    \item \textbf{ska-cicd-automation}\cite{ska-cicd-automation} which uses FastAPI \cite{fastapi} to build a python web application with a plugin architecture. In specific it has been created three plugins: \textbf{gitlab\_mr} used for merge request quality checks and for providing feedback to developers directly in Gitlab; \textbf{jira\_support} to handle jira operations and \textbf{nexus\_webhook} used to trigger webhooks every time a new artefact is published;
+    \item \textbf{ska-cicd-artefact-validations}\cite{ska-cicd-artefact-validations} based on Celery\cite{celery} which contains a main server that pull messages from Redis\cite{redis}, transform them into tasks for validation activities on artefacts and store the results into a MongoDB\cite{mongo} database. 
  \end{itemize}
- 
  
  \subsection{Merge Request Quality Checks}
  
- To ensure that every developer is following the development workflow and best practices, automated checks are performed to the created Merge Requests. A webhook was added to the ska-telescope Gitlab group, and every time a new Merge Request is created the webhook triggers the SKA MR Service. The \textit{ska-cicd-automation} project will launch in the pipeline three pods to a k8s cluster that is hosted in AWS. One pod is launched for each plugin in the \textit{ska-cicd-automation} module. The quality checks for the Merge Request will verify if:
+ To ensure that every developer is following the development workflow and best practices, automated checks are performed to the created Merge Requests. A webhook was added to the ska-telescope Gitlab group, and every time a new Merge Request is created the webhook triggers the service (represented in the fig. \ref{fig:CICD-automation-quality} as \textit{ska-cicd-automation}\cite{ska-cicd-automation}). The quality checks for the Merge Request will verify if:
  
  \begin{itemize}
-     \item The Merge Request Settings were set correctly
-     \item The branch name, the commit messages and the merge request have a Jira Ticket ID
-     \item The project has a proper license
-     \item The project as documentation on it and if it was updated
-     \item The project has pipelines with the needed jobs
+     \item the Merge Request Settings were set correctly;
+     \item the branch name, the commit messages and the merge request have a Jira Ticket ID;
+     \item the project has a proper license;
+     \item the project as documentation on it and if it was updated;
+     \item the project has pipelines with the needed jobs.
  \end{itemize}
  
  After the checks are performed the result of the checks are reported back to the developers in the main Merge Request page on GitLab via a comment. Fig. \ref{fig:marvin-table} represents an example of the comment, it includes a table with the severity of the failed check, a little description about the check and the mitigation strategy, so the developer can easily mitigate the problem to follow the development workflow and best practices. 
@@ -354,45 +354,45 @@ To verify if all the best practices are being followed, plugins and tasks were i
 
 \subsection{Nexus Artefact Validation}
 
-There are a lot of packaged code artefacts of multiple formats being created in the SKA Project, these artefacts are hosted inside Gitlab and then published to the Nexus Artifact repository. These artefacts should follow the SKAO naming and version conventions and include Metadata in them as well. The artefact names should be complaint with ADR-25, the versions should follow the Semantic Versioning 2.0.0 and all artefacts must include associated metadata with the required information, such as the person who published the artefacts, from which Gitlab repository is this artefact coming from and other useful information.
+There are a lot of packaged code artefacts of multiple formats being created in the SKA project, which are hosted inside Gitlab and then published to the Nexus Artifact repository. These artefacts should follow the SKAO naming and version conventions and include metadata in them as well. The artefact names should be complaint with semantic versioning 2.0.0\cite{semver} and all artefacts must include associated metadata with the required information, such as the person who published the artefacts, from which Gitlab repository is this artefact coming from and other useful information.
 
-To ensure that the guidelines and policies described are followed for a consistent, compliant and robust artefact management, there are a series of automated validations in place. If an artefact fails the validation, then it is moved to a quarantine state and the results of the checks are reported back to the developers that triggered the pipeline that published the artefact. The report to the developer is made by creating a newly Merge Request where the developer is made assignee and the description of the Merge Request has a table composed of the failed validations and instructions on how to mitigate them.
+To ensure that the guidelines and policies described are followed for a consistent, compliant and robust artefact management, there are a series of automated validations in place in the \textit{ska-cicd-artefact-validations}\cite{ska-cicd-artefact-validations}. 
+If an artefact fails the validation, then it is moved to a quarantine state and the results of the checks are reported back to the developers that triggered the pipeline that published the artefact. The report to the developer is made by creating a newly Merge Request where the developer is made assignee and the description of the Merge Request has a table composed of the failed validations and instructions on how to mitigate them.
 
-To execute the artefact validations three types of pods are launched from the \textit{ska-cicd-artefact-validation} project pipeline. There are launched four validation pods that contain the Celery Main Server, the replicaCount from this pod is four to help with the high traffic that may occur when multiple people publish artefacts at the same time. There are also launched pods with MongoDB to store the information about the artefacts and the validation results, and pods with Redis to communicate with the celery tasks.
+The execution of the artefact validations happens following the Celery architecture where there are a main server which pull messages from a queue (Redis) and creates tasks (processes) to perform the specific validation. Every task can then create other tasks (sub-tasks) as needed to perform other activity such as quarantine an artefact or create a merge request on Gitlab. The result of a validation is stored in a MongoDB database. 
 
 Fig. \ref{fig:Artefact-Validation-Workflow} has a state machine diagram that shows the artefact workflow from when it gets published on the Gitlab Job until it gets quarantined or pass all the checks. In the diagram the celery sub-tasks are represented in blue, and this tasks have the following role:
 
-\begin{figure}[!htb]
-    \centering
-    \includegraphics*[width=0.8\columnwidth]{Artefact-Validation-Workflow}
-    \caption{Artefact Validation Workflow}
-    \label{fig:Artefact-Validation-Workflow}
- \end{figure}
-
 \begin{itemize}
-    \item \textbf{Validation Task:} Task that performs the validation checks 
-    \item \textbf{Get Metadata Task:} Task used to extract the metadata from the artefacts in case that they have it
-    \item \textbf{Container Scanning Task:} Task that scans container vulnerabilities using trivy
-    \item \textbf{Quarantine Task:} Task that quarantines the artefacts if any of the checks fail
-    \item \textbf{Create MR Task:} Task that creates the MR to report the failures to the developers
-    \item \textbf{Insert DB Task:} Task that inserts metadata into MongoDB about the artefacts published
+    \item \textbf{Validation} that performs the validation checks 
+    \item \textbf{Get Metadata} Task used to extract the metadata from the artefacts in case that they have it
+    \item \textbf{Container Scanning} Task that scans container vulnerabilities using trivy
+    \item \textbf{Quarantine} Task that quarantines the artefacts if any of the checks fail
+    \item \textbf{Create MR} Task that creates the MR to report the failures to the developers
+    \item \textbf{Insert DB} Task that inserts metadata into MongoDB about the artefacts published
 \end{itemize}
 
 With this automated workflow, it is possible to keep and maintain a clean and organized repository, where all artefacts follow the guidelines and policies defined on the project.
 
+\begin{figure}[!htb]
+	\centering
+	\includegraphics*[width=0.8\columnwidth]{Artefact-Validation-Workflow}
+	\caption{Artefact Validation Workflow}
+	\label{fig:Artefact-Validation-Workflow}
+\end{figure}
 
 \section{Conclusion}
 The majority of the decisions taken by the Systems Team follow the workflow as described by the Continuous Integration process outlined in Martin Fowler’s paper and inspired by the state-of-the-art industry practices of \cite{DevOps, CI, CD}. In particular:
 \begin{itemize}
     \item For each component of the system, there is only one repository with minimal use of branching that is short-lived;
-    \item build, tests and publish of artefacts are automated with the use of few commands;
+    \item build, tests and publish of artefacts are automated with the use of few commands (Makefile targets);
     \item Every commit triggers a build in a different machine (a container within the K8s cluster);
     \item Once the artefacts are built (container images, Helm charts, etc.), the repository SKAMPI will create automatically a new deployment of the system and more tests are done at that level (i.e. system tests);
     \item Having a common repository (Nexus and GitLab page) for the code artefacts and the test results artefacts make it very easy to download the latest changes from every team and for each component to enable fast development;
     \item The integration environment is accessible for every developer and, is deployed in a unique Namespace in a Kubernetes cluster.
 \end{itemize}
 
-In addition, with the new sub-charts architecture, integration testing is done within the repositories of teams and brought in to the SKAMPI integration testing repository when a new version is created.  This enables developers to test not only their own work in isolation but also their work in conjunction with the developments contributed by other teams.
+In addition, every artefact is validated in term quality so that a common standard across the project is maintained.
 
 \section{ACKNOWLEDGEMENTS}
 This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
@@ -405,85 +405,45 @@ This work has been supported by Italian Government (MEF - Ministero dell'Economi
 	%\begin{thebibliography}{99}   % Use for  10-99  references
 	\begin{thebibliography}{99} % Use for 1-9 references
 	
+	\bibitem{CI}
+		Martin Fowler, Continuous Integration,
+		\url{https://martinfowler.com/articles/continuousIntegration.html}
+	
+	\bibitem{CD}
+		J. Humble, D. Farley, "Continuous Delivery: Reliable Software Releases Through Build, Test, and Deployment Automation",
+		2010, ISBN (0321601912, 9780321601919), Pub. Addison-Wesley Professional
+	
+	\bibitem{DevOps}
+		G. Kim, P. Debois, J. Willis, J. Humble, "The DevOps Handbook: How to Create World-Class Agility, Reliability, and Security in Technology Organizations", ISBN (1942788002 9781942788003)
+	
+	\bibitem{docker}
+		Docker, 
+		\url{https://www.docker.com/}
+	
 	\bibitem{tango-controls}
 		TANGO-controls,
 		\url{https://www.tango-controls.org/}
 	
-	\bibitem{CI}
-		Martin Fowler, Continuous Integration,
-		\url{https://martinfowler.com/articles/continuousIntegration.html}
-		
-	\bibitem{CD}
-	    J. Humble, D. Farley, "Continuous Delivery: Reliable Software Releases Through Build, Test, and Deployment Automation",
-	    2010, ISBN (0321601912, 9780321601919), Pub. Addison-Wesley Professional
-	
-	\bibitem{DevOps}
-	    G. Kim, P. Debois, J. Willis, J. Humble, "The DevOps Handbook: How to Create World-Class Agility, Reliability, and Security in Technology Organizations", ISBN (1942788002 9781942788003)
-	    
-	\bibitem{docker}
-		Docker, 
-		\url{https://www.docker.com/}
-
-	\bibitem{kubernetes}
-		Kubernetes,
-		\url{https://kubernetes.io/}
-
-	\bibitem{nexus}
-		Nexus,
-		\url{https://www.sonatype.com/nexus/repository-pro/}
-
-	\bibitem{elastcsearch}
-		Elasticsearch,
-		\url{https://www.elastic.co/}
-
-	\bibitem{prometheus}
-		Prometheus,
-		\url{https://prometheus.io/}
-
-	\bibitem{ceph}
-		Ceph Storage,
-		\url{https://ceph.io/}
-
-	\bibitem{helm}
-		Helm,
-		\url{https://helm.sh}
-
-	\bibitem{gitlab}
-		Gitlab,
-		\url{https://gitlab.com/}
-
-	\bibitem{ansible}
-		Ansible,
-		\url{https://www.ansible.com/}
-
-	\bibitem{SKAMPI}
-		SKAMPI - SKA Mvp Prototype Integration,
-		\url{https://gitlab.com/ska-telescope/ska-skampi}
-
 	\bibitem{ska-tango-images}
 		ska-tango-images repository,
 		\url{https://gitlab.com/ska-telescope/ska-tango-images}
-
-	\bibitem{gitlabrunner}
-		Gitlab Runner,
-		\url{https://gitlab.com/ska-telescope/sdi/deploy-gitlab-runners/}
-		
-	\bibitem{fastapi}
-		FastAPI,
-		\url{https://fastapi.tiangolo.com/}
 	
-	\bibitem{celery}
-		Celery,
-		\url{https://docs.celeryproject.org/en/stable}
-		
+	\bibitem{kubernetes}
+		Kubernetes,
+		\url{https://kubernetes.io/}
+	
+	\bibitem{helm}
+		Helm,
+		\url{https://helm.sh}
+	
 	\bibitem{vnc}
 		v11vnc,
 		\url{https://github.com/LibVNC/x11vnc}
-		
+	
 	\bibitem{novnc}
 		noVNC,
 		\url{https://github.com/novnc/noVNC}
-		
+	
 	\bibitem{restapi}
 		TANGO-controls REST API,
 		\url{https://gitlab.com/tango-controls/rest-api}
@@ -491,22 +451,91 @@ This work has been supported by Italian Government (MEF - Ministero dell'Economi
 	\bibitem{tangotest}
 		TANGO-controls test device server,
 		\url{https://gitlab.com/tango-controls/TangoTest}
-		
+	
+	\bibitem{nexus}
+		Nexus,
+		\url{https://www.sonatype.com/nexus/repository-pro/}
+	
+	\bibitem{SKAMPI}
+		SKAMPI - SKA Mvp Prototype Integration,
+		\url{https://gitlab.com/ska-telescope/ska-skampi}
+	
+	\bibitem{gitlab}
+		Gitlab,
+		\url{https://gitlab.com/}
+	
 	\bibitem{nginx}
 		NGINX,
 		\url{https://www.nginx.com/}
-		
+	
 	\bibitem{oauth2proxy}
 		OAuth2 Proxy,
 		\url{https://github.com/oauth2-proxy/oauth2-proxy}
-		
+	
+	
+	\bibitem{gitlabrunner}
+		Gitlab Runner,
+		\url{https://gitlab.com/ska-telescope/sdi/deploy-gitlab-runners/}
+	
 	\bibitem{minio}
 		MinIO,
 		\url{https://operator.min.io/}
-		
+	
 	\bibitem{s3}
 		Amazon S3 buckets,
 		\url{https://aws.amazon.com/it/s3/}
+	
+	\bibitem{elastcsearch}
+		Elasticsearch,
+		\url{https://www.elastic.co/}
+	
+	\bibitem{prometheus}
+		Prometheus,
+		\url{https://prometheus.io/}
+	
+	\bibitem{ceph}
+		Ceph Storage,
+		\url{https://ceph.io/}
+	
+	\bibitem{ska-cicd-services-api}
+		ska-cicd-services-api,
+		\url{https://gitlab.com/ska-telescope/sdi/ska-cicd-services-api}
+	
+	\bibitem{slack}
+		Slack,
+		\url{https://slack.com}
+	
+	\bibitem{jira}
+		Jira,
+		\url{https://www.atlassian.com/software/jira}
+	
+	\bibitem{ska-cicd-automation}
+		ska-cicd-automation,
+		\url{https://gitlab.com/ska-telescope/sdi/ska-cicd-automation}
+	
+	\bibitem{fastapi}
+		FastAPI,
+		\url{https://fastapi.tiangolo.com/}
+	
+	\bibitem{ska-cicd-artefact-validations}
+		ska-cicd-artefact-validations,
+		\url{https://gitlab.com/ska-telescope/sdi/ska-cicd-artefact-validations}
+	
+	\bibitem{celery}
+		Celery,
+		\url{https://docs.celeryproject.org/en/stable}
+	
+	\bibitem{redis},
+		Redis,
+		\url{https://redis.io/}
+	
+	\bibitem{mongo}
+		MongoDB,
+		\url{https://www.mongodb.com}
+	
+	\bibitem{semver}
+		Semantic versioning 2.0.0
+		\url{https://semver.org/}
 
 	\end{thebibliography}
 }
