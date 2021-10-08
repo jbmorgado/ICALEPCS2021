@@ -2,23 +2,31 @@
 % !TeX program = lualatex
 %
 % v 2.3  Feb 2019   Volker RW Schaa
-%		# changes in the collaboration therefore updated file "jacow-collaboration.tex"
-%		# all References with DOIs have their period/full stop before the DOI (after pp. or year)
-%		# in the author/affiliation block all ZIP codes in square brackets removed as it was not %         understood as optional parameter and ZIP codes had bin put in brackets
-%       # References to the current IPAC are changed to "IPAC'19, Melbourne, Australia"
-%       # font for ‘url’ style changed to ‘newtxtt’ as it is easier to distinguish "O" and "0"
+%		# changes in the collaboration therefore updated file
+%		"jacow-collaboration.tex"
+%		# all References with DOIs have their period/full stop before
+%		the DOI (after pp. or year)
+%		# in the author/affiliation block all ZIP codes in square
+%		brackets removed as it was not %         understood as optional
+%		parameter and ZIP codes had bin put in brackets
+%       # References to the current IPAC are changed to "IPAC'19, Melbourne,
+%       Australia"
+%       # font for ‘url’ style changed to ‘newtxtt’ as it is easier to
+%       distinguish "O" and "0"
 %
 \documentclass[a4paper,
-               %boxit,        % check whether paper is inside correct margins
-               %titlepage,    % separate title page
-               %refpage       % separate references
-               %biblatex,     % biblatex is used
-               keeplastbox,   % flushend option: not to un-indent last line in References
-               %nospread,     % flushend option: do not fill with whitespace to balance columns
-               %hyphens,      % allow \url to hyphenate at "-" (hyphens)
-               %xetex,        % use XeLaTeX to process the file
-               %luatex,       % use LuaLaTeX to process the file
-               ]{jacow}
+	       %boxit,        % check whether paper is inside correct margins
+	       %titlepage,    % separate title page
+	       %refpage       % separate references
+	       %biblatex,     % biblatex is used
+	       keeplastbox,   % flushend option: not to un-indent last line in
+	       References
+	       %nospread,     % flushend option: do not fill with whitespace to
+	       %balance columns
+	       %hyphens,      % allow \url to hyphenate at "-" (hyphens)
+	       %xetex,        % use XeLaTeX to process the file
+	       %luatex,       % use LuaLaTeX to process the file
+	       ]{jacow}
 %
 % ONLY FOR \footnote in table/tabular
 %
@@ -28,14 +36,14 @@
 % ----------------------------------------------------
 % test for XeTeX where the sequence is by default eps-> pdf, jpg, png, pdf, ...
 %    and the JACoW template provides JACpic2v3.eps and JACpic2v3.jpg which
-%    might generates errors, therefore PNG and JPG first
+%    might generate errors, therefore PNG and JPG first
 %
 \makeatletter%
 	\ifboolexpr{bool{xetex}}
 	 {\renewcommand{\Gin@extensions}{.pdf,%
-	                    .png,.jpg,.bmp,.pict,.tif,.psd,.mac,.sga,.tga,.gif,%
-	                    .eps,.ps,%
-	                    }}{}
+			    .png,.jpg,.bmp,.pict,.tif,.psd,.mac,.sga,.tga,.gif,%
+			    .eps,.ps,%
+			    }}{}
 \makeatother
 
 % CHECK FOR XeTeX/LuaTeX BEFORE DEFINING AN INPUT ENCODING
@@ -69,65 +77,64 @@
 
 \title{CI-CD Practices at SKA}
 
-\author{M. Di Carlo\thanks{matteodicarlo@gmail.com}, Dolci M., INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy \\
-        P. Harding\textsuperscript{1}, U. Yilmaz, SKA Organisation, Macclesfield, UK \\
-        B. Ribeiro, Instituto de Telecomunicações Aveiro, PT}
+\author{M. Di Carlo\thanks{matteo.dicarlo@inaf.it}, Dolci M., INAF Osservatorio Astronomico d'Abruzzo, Teramo, Italy \\
+	P. Harding\textsuperscript{1}, U. Yilmaz, SKA Organisation, Macclesfield, UK \\
+	B. Ribeiro, Instituto de Telecomunicações Aveiro, Portugal \\
+	J. B. Morgado, CICGE, Faculdade de Ciências da Universidade do Porto, Portugal}
 
 \maketitle
 
 \begin{abstract}
-The Square Kilometre Array (SKA) project is an international effort to build two radio interferometers in South Africa and Australia to form one Observatory monitored and controlled from the global headquarters (GHQ) based in the United Kingdom at Jodrell Bank. There has been a big effort in promoting CI/CD practices among the software development teams. CI/CD is an acronym that stands for continuous integration and continuous delivery and/or continuous deployment. Continuous integration (CI) is the practice of merging all developers local (working) copies into the mainline on a frequent basis (many times per day). Continuous delivery is the approach of developing software in short cycles ensuring that it can be released anytime and continuous deployment is the approach of delivering the software into operational use frequently and automatically. The present paper analyses the decisions taken by the Systems Team (a specialized agile team devoted to developing and maintaining the tools that allow continuous practises) to promote the CI/CD practices with the TANGO controls framework.
+The Square Kilometre Array (SKA) is an international effort to build two radio interferometers in South Africa and Australia forming one Observatory monitored and controlled from global headquarters (GHQ) based in the United Kingdom at Jodrell Bank. SKA is highly focused on adopting CI/CD practices for its software development. CI/CD stands for Continuous Integration \& Delivery and/or Deployment. Continuous Integration is the practice of merging all developers' local copies into the mainline frequently. Continuous Delivery is the approach of developing software in short cycles ensuring it can be released anytime, and Continuous Deployment is the approach of delivering the software into operational use frequently and automatically. This paper analyses the decisions taken by the Systems Team (a specialized agile team devoted to developing and maintaining the tools that allow continuous practices) to promote the CI/CD practices with the TANGO-controls framework.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}  % \label{} allows reference to this section
 
-When creating releases for the end-users, every large software endeavour faces the problem of integrating the different parts of the software solution and bringing them to the production environment where users work. When many parts of the project are developed independently for a period of time, the integration problem arises when merging them into the same branch consuming more than what was planned. In a classic Waterfall Software Development process this is usual, but the same also happens when following the classic Git Flow, also known as feature-based branching, which is when a branch is created for a particular feature. Considering, for example, one hundred developers working in the same repository each of them creating one or two branches. When merging it can easily lead to conflicts and it becomes impossible, for a single developer, to solve all of them thus creating a delay in publishing any release (in literature this is called "merge hell"). This problem becomes evident especially working with over a hundred repositories with different underlying technologies. Therefore, it is essential to develop a standard set of tools and guidelines to systematically manage and control different phases of the software development life cycle throughout the organisation.
+When creating releases for end-users, every large software endeavour faces the problem of integrating different parts of their software solution and bring them to the production environment. When many parts of the project are developed independently for some time, an integration problem arises when merging them into the same branch, consuming more developer resources than originally planned. In a classic Waterfall Software Development process this is usual but also happens when following the classic Git Flow — also known as Feature-based Branching, which is when a branch is created for a feature. As an example, considering one hundred developers working in the same repository each of them creating one branch, merging can easily lead to conflicts becoming unmanageable, for a single developer to solve, thus introducing a delay in the releases (in literature this is called "merge hell"). This problem becomes evident especially working with over a hundred repositories with different underlying technologies. Therefore, it is essential to develop a standard set of tools and guidelines to systematically manage and control different phases of the software development life cycle throughout the organisation.
 
 In the Square Kilometre Array (SKA) project, the selected development process is SAFe Agile (Scaled Agile framework) that is incremental and iterative with a specialized team (known as the Systems Team) devoted to supporting the Continuous Integration, Continuous Deployment, test automation and quality.
 
-
 \subsection{Continuous Integration (CI)}
-CI refers to a set of development practices that requires developers to integrate code into a shared repository several times a day. Each check-in is then verified by an automated build, allowing teams to detect problems as early as possible with early feedback about the state of the integration.
-According to Martin Fowler\cite{CI}, there are a number of best practices to implement to reach CI:
+CI refers to a set of practices requiring developers to integrate code into a shared repository often. Each commit is verified by an automated build, allowing teams to detect problems early in the process, giving feedback about the state of the integration. Martin Fowler\cite{CI} states various practices in this regard:
 \begin{itemize}
-    \item Maintain a single source repository (for each component of the system) and try to minimize the use of branching, in favour of a single branch of the project currently under development.
-    \item Automate the build (possibly all in one command).
-    \item Together with the build, automated tests must also be run in order to make the software self-testing (testing is crucial because all the benefits of CI come only if the test suite is of sufficient quality).
-    \item Every commit should build on an integration machine: the more developers commit the better it is (common practice is at least once per day).
-    \item Frequent commits reduce the number and size of potential conflicts: as the developer workflow is reconciled on short windows of change.
-    \item The main branch must always be stable.
-    \item The build must be fast so that a problem in integration can be found quickly.
-    \item Multi-stage deployment: every software build must be tested in different environments (testing, staging and so on).
-    \item Make it easy for anyone to get the latest executable version: all programmers should start the day by updating the project from the repository.
+	\setlength\itemsep{0.1em}
+    \item maintain a single source repository for each system's component, favouring the use of a single branch;
+    \item automate the build (possibly all in one command);
+    \item automated test is run after build process for the software to be self-testing (this is crucial: all benefits of CI rely on the test suite being high quality);
+    \item every commit should build on an integration machine: the more developers commit the better it is (common practice is at least once per day);
+    \item frequent commits reduce potential conflicts: developer workflow is reconciled on short windows of change;
+    \item main branch must always be stable;
+    \item builds must be fast so that problems are found quickly;
+    \item multi-stage deployment: every software build must be tested in different environments (testing, staging, etc);
+    \item make it easy to get the latest version: all programmers should start the day by updating their local copies;
     \item Everyone can see what’s happening: a testing environment with the latest software should be running.
 \end{itemize}
 
-\subsection{Continuous Delivery and Continuous Deployment (CD)}
-Continuous delivery\cite{CD} refers to an extension of CI that corresponds to automating the delivery of new releases of software in a sustainable way. The release frequency can be decided according to the business requirements but the greatest benefit is reached by releasing as quickly as possible.
-The deployment has to be predictable and sustainable, irrespective of whether it is a large-scale distributed system, a complex production environment, an embedded system, or an app. Therefore the code must be in a deployable state. Testing is the most important activities and it needs to cover enough of the codebase.
-While it is often assumed that frequent deployment means lower levels of stability and reliability in the systems, this is not the reality and, for  software in general, the golden rule is “if it hurts, do it more often, and bring the pain forward” - \cite{CD}, page 26.
+\subsection{Continuous Delivery \& Deployment (CD)}
+Continuous Delivery\cite{CD} refers to a CI extension focusing on sustainably automating the delivery of new software releases. Release frequency can be decided according to business requirements, but the greatest benefit is reached by releasing as quickly as possible. Deployment has to be predictable and sustainable, irrespective of whether it is a large-scale distributed system, complex production environment, embedded system, or app. Therefore the code must always be in a deployable state. Testing becomes the most important activity, needing to cover enough of the codebase.
 
-There are many patterns around deployment and, nowadays, all of them are related to the DevOps culture\cite{DevOps} which "is the outcome of applying the most trusted principles from the domain of physical manufacturing and leadership to the IT value stream. [...] The result is world-class quality, reliability, stability, and security at an ever lower cost and effort; and accelerated flow and reliability throughout the technology value stream, including Product Management, Development, QA, IT Operations, and Infosec". In other words, it corresponds to an increased collaboration between development (intended as requirements analysis, development and testing) and operations (intended as deployment, operations and maintenance) within IT. In the era of mainframe applications, it was common to have the two areas managed by different teams with the end result of having the development team with low (or zero) interest in the operational aspects (managed by a different team) and vice versa. Having a shared responsibility means that development teams share the problems of operations by working together in automating deployment operations and maintenance, and in return operations have a deeper understanding of the applications being supported. It is also very important that teams are autonomous: they should be empowered to deploy a change to production with no fear of failures. This is only possible by supplying the necessary testing/staging platform and required infrastructure tools so that developers can engage with the platforms.  It is also necessary to architect applications and deployment processes so that they can be rolled out and reverted if required.
-Moreover, automation is one of the key elements in implementing a DevOps strategy, as it allows the teams to focus on what is valuable (code development, test result, etc. and not the deployment itself) and it reduces human errors.
-The importance of those practices can be summarized in reducing risks of integration issues, of releasing new software and overall in having a better software product.
-Continuous deployment goes one step further as every single commit (!) to the software that passes all the stages of the build and test pipeline is deployed into the production environment (preferably automatically).
+Often, the unsupported fact that frequent deployment equals lower levels of stability and reliability, is assumed. For software, the golden rule should be “if it hurts, do it more often, and bring the pain forward” — \cite{CD}, page 26.
+
+There are many patterns around continuous deployment related to the DevOps culture\cite{DevOps}, "the outcome of applying the most trusted principles from the domain of physical manufacturing and leadership to the IT value stream. [...] The result is world-class quality, reliability, stability, and security at an ever lower cost and effort; and accelerated flow and reliability throughout the technology value stream, including Product Management, Development, QA, IT Operations, and Infosec". It fosters increased collaboration between development (requirements analysis, development and testing) and operations (deployment, operations and maintenance) within IT. In the era of mainframe applications was common to have the two areas managed by different teams resulting in a development team with low interest in the operational aspects (managed by a different team) and vice versa. Sharing responsibility means that development teams share the problems of operations by working together in automating deployment operations and maintenance, and in return, operations have a deeper understanding of the applications being supported. It is also very important that teams are autonomous: being empowered to deploy a change to production with no fear of failure. This is only possible by supplying the necessary testing/staging platform and required infrastructure tools for developers to engage with the platforms and by using applications and deployment processes that can be rolled out and reverted if required.
+
+Automation is one of the key elements of a DevOps strategy. It allows teams to focus on what is valuable (code development, test results, etc.) instead of the deployment itself, reducing human errors. The importance of those practises is to reduce risks of integration issues, releasing new software and creating better software products. CD goes one step further, as every single commit to the software that passes all the stages of the build and test pipeline, is deployed into the production environment — preferably automatically.
 
 \section{Containerisation} \label{containerisation}
-The \textit{system engineering} development process has been adopted in the initial design phase of the SKA project to reduce the complexity by dividing the project into simpler and easier to resolve elements. For every element of the system, an initial architecture has been developed, which comprises the software modules needed which corresponds to a repository (each of them is a component of the system).
+The \textit{system engineering} development process was adopted in the initial design phase of the SKA project to reduce complexity by dividing the project into simpler elements. For every element, an initial architecture was developed, which comprises the software modules needed corresponding to a repository — each a component of the system.
 
-Since all components need to be deployed and tested together, the first decision taken is on how they need to be packaged. A container is a standard run-time unit of software that packages up code and all its dependencies so that the component runs quickly and reliably across different computing environments. A \textit{Docker}\cite{docker} \textit{container image} is a lightweight, standalone, executable package of software that includes everything needed to run an application: code (or more generally binary), runtime, system tools, system libraries and settings. 
+Since all components need to be deployed and tested together, the first decision is how to package them. A container is a standard run-time unit of software that packages code and dependencies so that the component runs quickly and reliably across different computing environments. A \textit{Docker}\cite{docker} \textit{container image} is a lightweight, standalone, software package including everything needed to run an application: code, runtime, system tools, system libraries and settings. 
 
-One of the main dependency in the SKA software is the TANGO-controls\cite{tango-controls} framework which is a middleware for connecting software processes together mainly based on the CORBA standard (Common Object Request Broker Architecture). The standard defines how to exposes the procedures of an object within a software process with the RPC protocol (Remote Procedure Call). The TANGO framework extends the definition of an object with the concept of a Device which represents a real or virtual device to control. This exposes commands (that are procedures), and attributes (like the state) and allows both synchronous and asynchronous communication with events generated from the attributes (for instance a change in an attribute value can generate an event). Fig.\ref{fig:tangodatamodel} shows a module view of the framework.
+One of the main dependencies in the SKA software is the TANGO-controls\cite{tango-controls} framework, a middleware for connecting software processes mainly based on the CORBA standard (Common Object Request Broker Architecture). The standard defines how to expose the procedures of an object within a software process with the RPC protocol (Remote Procedure Call). TANGO extends the definition of an object with the concept of a Device that represents a real or virtual device to control. This exposes commands (procedures), and attributes (i.e. state) allowing both synchronous and asynchronous communication with events generated from attributes. Fig.\ref{fig:tangodatamodel} shows a module view of the framework.
 
 \begin{figure}[!htb]
    \centering
    \includegraphics*[width=.7\columnwidth]{SimplifiedDataModel}
-   \caption{TANGO-Controls simplified data model.}
+   \caption{TANGO-controls simplified data model.}
    \label{fig:tangodatamodel}
 \end{figure}
 
-The importance of using containers is shown when there is a dependency. In fact, the entire framework is packaged into a set of container images\cite{ska-tango-images} so that the final product is a containerized application which will be run in a system for managing these kinds of applications. In specific, a SKA repository called \textit{ska-tango-images}\cite{ska-tango-images} has been created which encapsulate all its components in a set of container images. Fig. \ref{fig:ska-tango-images} shows a simplified diagram for this project (some container images are missing in favour of readability). By extending one of them, the TANGO-controls becomes a layer inside the base images of any SKA module solving the dependency once for all. 
+The importance of containers becomes clear with dependencies. The entire framework is packaged onto a set of containers \cite{ska-tango-images} so that the final product is a containerized application that will be run in a system for managing these applications. Specifically, there is a SKA repository \textit{ska-tango-images}\cite{ska-tango-images}, encapsulating all its components in a set of container images. Fig. \ref{fig:ska-tango-images} shows a simplified diagram for this project. By extending one of them, TANGO-controls becomes a layer inside the base images of any SKA module solving the dependency once for all. 
 
 \begin{figure}[!htb]
    \centering
@@ -136,43 +143,45 @@ The importance of using containers is shown when there is a dependency. In fact,
    \label{fig:ska-tango-images}
 \end{figure}
 
-The selection made for container orchestration is \textit{Kubernetes (K8s)}\cite{kubernetes} and \textit{Helm Charts}\cite{helm} for declaring runtime dependencies for K8s applications. In K8s all deployment elements are resources, that are abstracted away from the underlying infrastructure implementation. For example these may be a Service (network configuration), a PersistentVolume (file-system type storage) or a simple Pod which is the smallest deployable unit of computing consisting of one (or more) container(s). The resources reside in a cluster (a set of machines connected together) and share a predefined network (for service discovery), storage and other resources like computing power. 
-Helm is a tool for managing Kubernetes deployments with charts where a chart is a package of pre-configured Kubernetes resources, married to run-time instance configuration.  
+\textit{Kubernetes (K8s)}\cite{kubernetes} is used for container orchestration and \textit{Helm Charts}\cite{helm} for declaring runtime dependencies for K8s applications. In K8s all deployment elements are resources abstracted away from the underlying infrastructure implementation. For example, a Service (network configuration), PersistentVolume (file-system type storage) or Pod (the smallest deployable unit of computing, consisting of containers). The resources reside in a cluster (a set of connected machines) and share a network, storage and other resources like computing power. Helm is a tool for managing K8s deployments with charts — a package of pre-configured K8s resources, tied to run-time instance configuration.  
 
-Namespaces are an important concept in Kubernetes where they are used to create a logical separation of resources within a shared multi-tenant environment. The Namespace enforces a separate network and set of access rights enabling a virtual private space for contained deployment.
+Namespaces create a logical separation of resources within a shared multi-tenant environment. A Namespace enforces a separate network and set of access rights enabling a virtual private space for contained deployment.
 
-The \textit{ska-tango-images} repository contains also the definitions two Helm Charts: \textit{ska-tango-base} and \textit{ska-tango-util}.
+\textit{ska-tango-images} repository contains the definitions of two Helm Charts: \textit{ska-tango-base} and \textit{ska-tango-util}.
 
-The \textit{ska-tango-base} Helm chart is an application chart which defines the basic TANGO ecosystem in Kubernetes. In specific it defines the following K8s services:
+\textit{ska-tango-base}: aplication Helm Chart defines the basic TANGO ecosystem with the following K8s services:
+
 \begin{itemize}
-    \item \textit{tangodb}: it is a mysql database used to store configuration data used at startup of a device server.
-    \item \textit{databaseds}: it is a device server providing configuration information to all other components of the system as well as a runtime catalog of the components/devices.
-    \item \textit{itango}: it is an interactive TANGO client.
-    \item \textit{vnc}: it is a debian environment with x11 window system together with vnc\cite{vnc} and noVNC\cite{novnc} installed on it.
-    \item \textit{tangorest}: it defines the rest api\cite{restapi} for the TANGO eco-system.
-    \item \textit{tangotest}: it is the tango test device server\cite{tangotest}.
+	\setlength\itemsep{0.1em}
+    \item \textit{tangodb}: MySQL database used to store configuration data used at the startup of a device server;
+    \item \textit{databaseds}: device server providing configuration information to system's components, and runtime catalogue of the components/devices;
+    \item \textit{itango}: interactive TANGO client;
+    \item \textit{vnc}: Debian environment with x11 window system together with vnc\cite{vnc} and noVNC\cite{novnc} installed on it;
+    \item \textit{tangorest}: rest api\cite{restapi} for TANGO eco-system;
+    \item \textit{tangotest}: TANGO test device server\cite{tangotest}.
 \end{itemize}
 
-The \textit{ska-tango-util}, instead, is a library chart which helps other application charts to define their TANGO device servers. In specific, it defines the following Helm named template:
+\textit{ska-tango-util}: library chart helper for defining TANGO device servers on applications. Defines the following Helm templates:
+
 \begin{itemize}
-    \item \textit{multidevice-config}: it creates a K8s ConfigMap which contains the generated dsconfig json configuration file, the boostrap script for the dsconfig application and a python script for multi class device server startup;
-    \item \textit{multidevice-job}: it creates a job for the dsconfig application to apply a configuration json file set into the values file;
-    \item \textit{multidevice-sacc-role}: it creates a K8s service account, a role and role binding for waiting the configuration job to be done;
-    \item \textit{multidevice-svc}: it creates a K8s service and a K8s statefulset for a device server tag specified in the values file.
+	\setlength\itemsep{0.1em}
+    \item \textit{multidevice-config}: K8s ConfigMap defining dsconfig JSON configuration file, bootstrap script for  dsconfig, and python script for multi-class device server startup;
+	\item \textit{multidevice-job}: job for dsconfig application to apply a configuration JSON file set into the values file;
+    \item \textit{multidevice-sacc-role}: K8s service account, role and role binding that waits for configuration job to finish;
+    \item \textit{multidevice-svc}: K8s service and a K8s StatefulSet for a device server tag specified in the values file.
 \end{itemize}
 
-Every Helm Chart contains at a minimum the information concerning the version of the container images and the pull policy (retrieval rule for the image) for the deployment. It also contains the necessary information to correctly initialize the TANGO database (configuration of devices) and how it is exposed to other applications for discovery in the cluster.
+A Helm Chart contains at a minimum, information concerning the version of the container images and pull policy (image retrieval rule) for deployment. It also contains the necessary information to correctly initialize the TANGO database (device configuration) and how is exposed to other applications for discovery whiting the cluster.
 
-As any other SKA repositories, \textit{Makefiles} are selected as an abstraction and organisation layer to eliminate language-specific scripts for building, testing, deployment and to promote ease of use in CI/CD. The use of a \textit{Makefile} in each project simplifies the work of containerisation and, overall, the automation of the code building, testing and packaging processes. In fact, with one single command, it is possible to compile the project, generate the container images and test them by dynamically installing the related Helm Chart in a Kubernetes environment.
+Other SKA repositories \textit{Makefiles} are selected as an abstraction and organisation layer eliminating language-specific scripts for building, testing, deployment and promoting ease of use in CI/CD. The use of a \textit{Makefile} in each project simplifies containerisation work and automation of code building, testing and packaging processes, making it possible with a single command to compile the project, generate container images and test them by dynamically installing the related Helm Chart in a K8s environment.
 
-The Makefile also enables the publishing of the container images and Helm Charts to the SKA artefact repository and, in general, it also promotes the reusability of same build toolchain in different environments such as local development and CI/CD lifecycle.
-
+The Makefile also enables publishing of container images and Helm Charts to SKA artefact repository and promotes reusability of the same build toolchain in different environments such as local development and CI/CD lifecycle.
 
 \section{Architecture for integration}
 
-In the previous section, it has been highlighted that the SKA project can be seen as set of elements composed by a set of software modules which corresponds to a repository. For each of them, one of more container images are built and pushed into the artefact repository (the Nexus\cite{nexus} box shown in fig. \ref{fig:stfc-cloud-component}) while for each element, an Helm chart is published into the same storage solution. 
+In the previous section, was highlighted how the SKA project can be seen as a set of elements composed by a set of software modules corresponding to a repository. For each repository, one or more container images are built and pushed into the artefact repository (Nexus\cite{nexus} box shown in fig. \ref{fig:stfc-cloud-component}) while for each element, a Helm Chart is published into the same storage solution. 
 
-Since an Helm chart can be in a dependency relationship with another chart, this concept can be used for integrating the various SKA elements which comprise the SKA MVP Product Integration (SKAMPI\cite{SKAMPI}) in a composable way that represents the bulk of the effort for integrating all the SKA software sub-systems. Fig.\ref{fig:skampi} shows a simplicistic view of the above concept and it is easy to see how it resemble a hierarchy.
+Since a Helm Chart can be in a dependency relationship with another chart, this concept can be used for integrating the various SKA elements which comprise the SKA MVP Product Integration (SKAMPI\cite{SKAMPI}) in a composable way representing the bulk of the effort for integrating all SKA's software sub-systems. Fig.\ref{fig:skampi} shows a simplistic view of this above concept and its hierarchy.
 
 \begin{figure}[!htb]
 	\centering
@@ -181,7 +190,7 @@ Since an Helm chart can be in a dependency relationship with another chart, this
 	\label{fig:skampi}
 \end{figure}
 
-It is very important to consider the operational aspect of the Helm dependencies which state that when Helm installs/updates a chart, the Kubernetes resources from the chart and all its dependencies are aggregated into a single set, then sorted by type followed by name and then created/updated in that order. Because of this, it has been imposed a limit of one level dependency so basically a single-level hierarchy with a parent chart, called  umbrella, that pulls together the charts of the hierarchy. While SKAMPI is the composition of the entire hierarchy, it is possible to think of different umbrella charts for other purposes like integration testing between a select few elements of the hierarchy. Fig. \ref{fig:umbrella_chart} shows the umbrella chart concept: the blue umbrella chart is the entire hierarchy while the red and green ones are for other purposes. This means that every SKA element can perform its integration testing just creating an umbrella chart with the sub-elements needed for its integration.
+It is important to consider the operational aspects of the Helm dependencies which state that when Helm installs/updates a chart, the K8s resources from the chart and all its dependencies are aggregated into a single set, sorted by type followed by a name, and created/updated in that order. Due to this, a limit was imposed for single-level hierarchy with a parent chart, called the umbrella chart, which pulls together the charts of the hierarchy. While SKAMPI is the composition of the entire hierarchy, it is possible to think of different umbrella charts for other purposes like integration testing between a select few elements of the hierarchy. Fig. \ref{fig:umbrella_chart} shows the umbrella chart concept: the blue umbrella chart is the entire hierarchy while the red and green ones are for other purposes. This means that every SKA element can perform its integration testing by creating an umbrella chart with sub-elements needed for its integration.
 
 \begin{figure}[!htb]
    \centering
@@ -192,7 +201,7 @@ It is very important to consider the operational aspect of the Helm dependencies
 
 \section{SKA infrastructure}
 
-To support the architecture for integration, an infrastructure has been built which consists of a standard footprint of VPN/SSH JumpHost gateway (called Terminus), Monitoring, Logging, Storage and Kubernetes services to support the GitLab\cite{gitlab} runner architecture, and MVP testing facilities as shown in Fig.\ref{fig:stfc-cloud-component} used to support DevOps and Integration testing facilities.
+To support the integration's architecture an infrastructure was built consisting of a standard footprint of VPN/SSH JumpHost gateway (called Terminus), Monitoring, Logging, Storage and K8s services to support the GitLab\cite{gitlab} runner architecture, and MVP testing facilities as shown in Fig.\ref{fig:stfc-cloud-component} used to support DevOps and Integration testing facilities.
 
 \begin{figure}[!htb]
 	\centering
@@ -201,7 +210,7 @@ To support the architecture for integration, an infrastructure has been built wh
 	\label{fig:stfc-cloud-component}
 \end{figure}
 
-An initial Kubernetes cluster has been deployed with the 1x loadbalancer, 3x master, and 6x worker configuration. Fig.\ref{fig:k8s} illustrates how the load balancer ties the Kubernetes services together and exposes deployed applications such as Ingresses to the outside world. The Kubernetes API Server is exposed externally from Terminus using TCP pass-through, and the NGiNX\cite{nginx} Ingress Controller is SSL terminated for external user access. These services are exposed using an NGiNX reverse proxy. The Ingress access on port 443 is password protected using oauth2-proxy\cite{oauth2proxy} integration with GitLab.
+A K8s cluster was deployed with 1 LoadBalancer, 3 Master, and 6 Worker configuration. Fig.\ref{fig:k8s} illustrates how the LoadBalancer ties K8s services together exposing deployed applications to the outside world. The K8s API Server is exposed externally from Terminus using TCP pass-through, and NGiNX\cite{nginx}'s Ingress Controller is SSL terminated for external access. These services are exposed using an NGiNX reverse proxy. Ingress access on port 443 is password protected using oauth2-proxy\cite{oauth2proxy} integration with GitLab.
 
 \begin{figure}[!htb]
 	\centering
@@ -210,19 +219,19 @@ An initial Kubernetes cluster has been deployed with the 1x loadbalancer, 3x mas
 	\label{fig:k8s}
 \end{figure}
 
-The Kubernetes runner \cite{gitlabrunner} works as a multiplexer that receives requests from GitLab for jobs, and then launches Pods for each one up to a configured scaling limit (currently 15 concurrent jobs). GitLab runners use an intermediate cache to speed up jobs by passing dependencies between them. The cache for this is based on Minio\cite{minio} which presents S3\cite{s3} compatible buckets for storage.
+The K8s runner \cite{gitlabrunner} works as a multiplexer receiving requests from GitLab for jobs and launching their respective Pods up to a configured scaling limit (15 currently). GitLab's runners use intermediate cache to speed up jobs by passing dependencies between them. This cache is based on Minio\cite{minio} with S3\cite{s3} compatible buckets for storage.
 
 \begin{figure}[!htb]
 	\centering
 	\includegraphics*[width=0.8\columnwidth]{gitlab-runner}
-	\caption{Gitlab runner}
+	\caption{GitLab runner}
 	\label{fig:gitlab-runner}
 \end{figure}
 
 
 \section{Pipeline}
 
-In order to bring everything together for a complete CI/CD toolchain, GitLab\cite{gitlab} has been selected. The data model for a generic SKA software is shown in figure\ref{fig:pipelinedatamodel}.
+To bring everything together for a complete CI/CD toolchain, GitLab\cite{gitlab} was selected. The data model for a generic SKA software is shown in figure \ref{fig:pipelinedatamodel}.
 
 \begin{figure}[!htb]
    \centering
@@ -231,19 +240,24 @@ In order to bring everything together for a complete CI/CD toolchain, GitLab\cit
    \label{fig:pipelinedatamodel}
 \end{figure}
 
-The entry point of the diagram is the Pipeline box that is composed of many jobs (i.e. shell scripts).  This has been standardised for each project regardless of the artefact each project delivers so that the same standardised steps for code/configuration and Helm charts are followed:
+The entry point of the diagram is the Pipeline box, composed of several jobs. This was standardised for each project regardless of its artefacts so that the same standardised steps for code/configuration and Helm Charts are followed:
+
 \begin{itemize}
-    \item Linting, where code is analysed against a set (or multiple sets) of coding rules in order to check if it follows the best practices decided;
-    \item Build, where code is compiled and a container image is created;
-    \item Test, where the compiled package (and container image) are tested;
-    \item Publish, where the code artefacts are published;
-    \item Pages, where any kind of test results are published (note: the name comes directly from the GitLab technology).
+	\setlength\itemsep{0.1em}
+    \item \textbf{linting}: code is analysed against sets of coding rules to check if it follows the agreed best practices;
+    \item \textbf{build}: code is compiled and a container image created;
+    \item \textbf{test:} compiled package (and image) are tested;
+    \item \textbf{publish}: code artefacts are published;
+    \item \textbf{pages}: test results are published (GitLab's naming).
 \end{itemize}
 
-The pipeline is respected as the main hub of the software development in which code is built, tested, verified, published and integrated. The above steps are used in local development (as same shell scripts are available thanks to the \textit{Makefile} targets), merge workflow, QA, integration and release. Moreover, by having an almost identical platform environment for different stages of the software lifecycle, sufficient differences between development and operations are eliminated.
+The pipeline is respected as the main hub of software development in which code is built, tested, verified, published and integrated. These steps are used in local development (where the same shell scripts are available thanks to the \textit{Makefile} targets), merge workflow, QA, integration and release. Also, having an almost identical platform environment for different stages of the software lifecycle, significant differences between development and operations are eliminated.
 
-Fig.\ref{fig:cicdruntime} shows (without a specific formalism) the run-time behaviour of the selected technologies working together. At the centre of the diagram, there is a Kubernetes cluster defined for every project in the SKA telescope group. Outside the K8s cluster, there are the GitLab code repositories and Pages, the Nexus Artifact repository\cite{nexus} to store packaged code artefacts, the ELK stack (Elasticsearch, Logstash and Kibana)\cite{elastcsearch} for logging, prometheus\cite{prometheus} for monitoring (metric collection) and Ceph\cite{ceph} for a distributed storage solution.
-Inside the cluster, in an isolated K8s Namespace, there are the GitLab runners related K8s resources which check every 30 seconds, if there are pending pipelines triggered manually or pulled by the resources. If the runner finds a pipeline, it creates a K8s Pod for each job defined in the configuration file (and part of the git revision). Each created Pod can (potentially) deploy a (umbrella) chart needed for the specific testing of the repository in an isolated Namespace (i.e. an isolated environment). The deployment installed can then be tested and the result of the job will be reported to GitLab producing artefacts that will be stored in the correct artefact repository. During any stage of the pipeline, jobs could also download required dependencies from the artefact repository. Depending on the type of job, the pipeline is also used for deploying the permanently running version of SKAMPI or any other resources that are needed. The Kubernetes cluster is also equipped with monitoring solutions to examine the health and performance of the cluster and any resources that are deployed in it. Storage and logging solutions are also integrated to provide a consistent logging and distributed storage framework for the resources as needed. Finally, this architecture for creating temporal K8s resources for the pipeline steps (testing, building, packaging, etc.) ensures that necessary environments for the jobs are always clean (not affected by the previously run pipelines).
+Fig.\ref{fig:cicdruntime} shows a simplification of the run-time behaviour of the selected technologies working together. At the centre part, there is a K8s cluster defined for every project in SKA's telescope. Outside the K8s cluster, are GitLab code repositories and pages, Nexus Artifact repository\cite{nexus} (store packaged code artefacts), ELK stack (Elasticsearch, Logstash and Kibana)\cite{elastcsearch} for logging, prometheus\cite{prometheus} for monitoring (metric collection) and Ceph\cite{ceph} for distributed storage.
+
+Inside the cluster, in an isolated K8s Namespace, are the GitLab runners related K8s resources, checking every 30 seconds if there are pending pipelines triggered manually or pulled by resources. If the runner finds a pipeline, it creates a K8s Pod for each job defined in the configuration file. Each created Pod is capable of deploying an umbrella chart needed for specific testing of the repository in an isolated Namespace. The installed deployment can then be tested and the job's result will be reported to GitLab producing artefacts, to be stored in the correct artefact repository.
+
+During any stage of the pipeline, jobs can download required dependencies from the artefact repository. Depending on the type of job, the pipeline is used for deploying the permanently running version of SKAMPI or other resources needed. The K8s cluster is equipped with monitoring solutions to examine the cluster's health and performance and any resources that are deployed in it. Storage and logging solutions are integrated to provide a consistent logging and distributed storage framework for the resources. Finally, this architecture for creating temporal K8s resources for pipeline steps (testing, building, packaging, etc.) ensures that necessary environments for the jobs are always clean — i.e. not affected by previously run pipelines.
 
 \begin{figure}[!htb]
    \centering
@@ -253,67 +267,70 @@ Inside the cluster, in an isolated K8s Namespace, there are the GitLab runners r
 \end{figure}
 
 \section{Testing}
-The most important best practice for CI is testing so the main question now is how a generic component of the SKA can be tested within the above architecture?
-In the SKA, testing has been split into two distinct types: pre-deployment and post-deployment tests. The deployment happens when a runner executes a job with an Gitlab environment keyword. By doing so, the job is linked to the K8s cluster through GitLab configuration.
-While the pre-deployment tests (namely unit tests) are all made without the real system online (using stubs and mocks), the other tests (namely integration and system tests) need more than one live system component to be up and running as the tests are mostly using other services and applications.
-The SKA is composed of many different modules, each of them with its own repository and different requirements for the components needed for its integration and system testing. For each of them, an umbrella chart has been introduced which enabled the specific component to be deployed together with its dependencies.
-Specifically, to enable the GitLab pipeline to deploy and test the chosen component each repository must:
+The most important in CI is testing, so we need to question ourselves how a generic component of the SKA can be tested with the above architecture. At the SKA, testing was split into two distinct types: pre-deployment and post-deployment. Deployment happens when a runner executes a job with a GitLab environment keyword. By doing so, the job is linked to the K8s cluster through GitLab configuration. While pre-deployment tests (unit tests) are made without the real system online (using stubs and mocks), other tests (integration and system tests) need more than one live system component to be up and running as they will be using other services and applications. The SKA is composed of several distinct modules, each of them with its repository and different requirements for the components needed for integration and system testing. For each, an umbrella chart was introduced which enabled the specific component to be deployed together with its dependencies. Specifically, to enable the GitLab pipeline to deploy and test the chosen component each repository must:
+
 \begin{itemize}
-    \item contain at least one Helm chart
-    \item have an environment
-    \item have a Makefile for K8s testing
+	\setlength\itemsep{0.1em}
+    \item contains at least one Helm Chart;
+    \item has an environment;
+    \item has a Makefile for K8s testing.
 \end{itemize}
 
-A set of templates and standardized Makefiles has been developed by the system team so the only need to to include them in the repository. 
+A set of templates and standardized Makefiles was developed by the System Team, so it is only necessary to include them in the repository. The post-deployment test job is then composed of the following steps defined in those Makefiles:
 
-The post deployment test job is composed of the following steps (all made with the help of a Makefile):
 \begin{itemize}
-    \item install: installs the chart (with the sub-charts needed) in the Namespace specified in the environment
-    \item wait: wait for every container to be running
-    \item test:
+	\setlength\itemsep{0.1em}
+    \item \textbf{install}: installs chart (and sub-charts) in the Namespace specified in the environment;
+    \item \textbf{wait}: wait for every container to be running;
+    \item \textbf{test}:
     \begin{itemize}
-        \item Create a container in the Namespace specified in the environment
-        \item Run pytests inside the above container
-        \item Return the results of the tests
+	\setlength\itemsep{0.1em}
+	\item create container in the Namespace specified in the environment;
+	\item run PyTests inside this container;
+	\item return test results.
     \end{itemize}
-    \item post test: delete all resources allocated for the tests
+    \item \textbf{post test}: delete all resources allocated for tests.
 \end{itemize}
 
-The artefacts are the output of the tests and it will have the report both in XML and JSON but also other information like the pytest output so that thw next steps (mostly packaging and releasing) in the pipeline can be run.
+The artefacts are the output of the tests, containing reports both in XML and JSON and other (i.e. PyTest's) output so that consequent pipeline steps (mostly packaging and releasing) can be run.
 
 \section{Development Workflow}
-There are two important assumptions behind understanding the SKA development workflow: the master branch shall always be stable and branches shall be short-lived. With the term stable, it means that the master branch always compiles and all automated tests run successfully. This also means that every time a master branch results in a condition of instability, reverting to a condition of stability shall have precedence over any other activity on the repository (and by the responsible developers).
-As a result, the selected development workflow for SKA is the following:
+There are two important assumptions for understanding SKA's development workflow: the master branch shall always be stable, and branches shall be short-lived. Stable means that the master branch always compiles, and all automated tests run successfully. This also means that every time a master branch results in a condition of instability, reverting to a condition of stability shall have precedence over any other activity on the repository. As a result, the selected development workflow for SKA is the following:
+
 \begin{itemize}
-    \item A developer takes a copy of the current code base on which to work
-    \item Work is started on a new branch based on the story being implemented
-    \item As the developer advances in the implementation commits are done on the local git repo.
-    \item Unit tests are written and run in the development environment until successfully executed
-    \item Once the tests pass the developer pushes the changes into a remote branch
-    \item The CI server (GitLab)
+	\setlength\itemsep{0.1em}
+    \item developer works on current code base's copy;
+	\item work on a story starts on a new branch named after it;
+    \item developer frequently commits changes to local git repo;
+    \item developer creates unit tests to be run on local environment until they successfully pass;
+    \item once tests pass, changes are pushed to a remote branch;
+    \item CI server (GitLab):
     \begin{itemize}
-        \item Checks out changes when they occur
-        \item Runs static code analysis and provide feedback to the developer
-        \item builds the system and runs unit and integration tests on the branch
-        \item Provide feedback to the developer about the status of the tests (fail or success)
-        \item Provide feedback about coverage metrics
+	\setlength\itemsep{0.1em}
+	\item checks out changes when they occur;
+	\item runs static code analysis providing feedback;
+	\item builds system and runs unit and integration tests on the
+		branch;
+	\item provide feedback to developer about test status;
+	\item provide feedback about coverage metrics.
     \end{itemize}
-    \item Once all tests execute successfully on the branch, the developer makes a pull request (\textit{i.e. Merge Request in GitLab terms}) for merging the changes into master.
-    \item As part of the pull request, the code is reviewed and approved by other developers
-    \item Code is merged into the master branch
-    \item Then, the CI server (GitLab)
+    \item once all branch's tests execute successfully, the developer opens a pull request (\textit{i.e. GitLab's Merge Request}) for merging changes onto master;
+    \item code is reviewed and approved by other developers;
+    \item code is merged into the master branch;
+    \item CI server (GitLab):
     \begin{itemize}
-        \item Runs the whole pipeline again including all the tests on the master branch
-        \item Releases deployable artefacts for testing (reports, code analysis, etc.)
-        \item Assigns a build label to the version of the code it just built (i.e. docker image version)
-        \item Alerts the team if the build or tests fail which fixes the issue asap
-        \item Publishes the successfully build artefacts to the artefact repository
+	\setlength\itemsep{0.1em}
+	\item runs whole pipeline again including the tests on master branch;
+	\item releases deployable artefacts for testing (reports, code analysis, etc.);
+	\item assigns build label the code's version built (i.e. docker image version);
+	\item alerts team if build or tests fail for them to fix issue ASAP;
+	\item publishes the successful build artefacts to artefact repository.
     \end{itemize}
 \end{itemize}
 
 \section{CI-CD automation and quality}
 
-To verify if all the best practices are being followed, plugins and tasks were implemented to perform quality checks on Gitlab merge requests and on the artefacts published to nexus. Fig.\ref{fig:CICD-automation-quality} shows a modules view of the frameworks used to perform these quality checks. 
+To verify if all best practices are followed, plugins and tasks were implemented to perform quality checks on GitLab's merge requests and artefacts published to Nexus. Fig.\ref{fig:CICD-automation-quality} shows a module's view of the frameworks for those. 
 
 \begin{figure}[!htb]
     \centering
@@ -322,19 +339,22 @@ To verify if all the best practices are being followed, plugins and tasks were i
     \label{fig:CICD-automation-quality}
  \end{figure}
  
- In the above diagram it is possible to see three main packages:
+The above diagram shows three main packages:
  
  \begin{itemize}
-    \item \textbf{ska-cicd-services-api}\cite{ska-cicd-services-api} which includes all the APIs that will be used in the other two packages. These APIs will allow the communicate with Gitlab (i.e for merge request creation or for project information, etc), Slack\cite{slack} (i.e. for sending messages to channels), Jira \cite{jira} (i.e. for projects information) and Nexus (i.e. for getting component information);
-    \item \textbf{ska-cicd-automation}\cite{ska-cicd-automation} which uses FastAPI \cite{fastapi} to build a python web application with a plugin architecture. In specific it has been created three plugins: \textbf{gitlab\_mr} used for merge request quality checks and for providing feedback to developers directly in Gitlab; \textbf{jira\_support} to handle jira operations and \textbf{nexus\_webhook} used to trigger webhooks every time a new artefact is published;
-    \item \textbf{ska-cicd-artefact-validations}\cite{ska-cicd-artefact-validations} based on Celery\cite{celery} which contains a main server that pull messages from Redis\cite{redis}, transform them into tasks for validation activities on artefacts and store the results into a MongoDB\cite{mongo} database. 
+	\setlength\itemsep{0.1em}
+    \item \textbf{ska-cicd-services-api}\cite{ska-cicd-services-api} which includes all APIs that will be used in the other two packages. These APIs allow to communicate with GitLab (i.e merge request creation or for project information), Slack\cite{slack} (i.e. sending messages to channels), Jira \cite{jira} (i.e. project information) and Nexus (i.e. obtaining component information);
+    \item \textbf{ska-cicd-automation}\cite{ska-cicd-automation} which uses FastAPI \cite{fastapi} to build a Python web application with a plugin architecture. Three plugins have been created: \textbf{gitlab\_mr} used for merge request quality checks and providing feedback to developers directly on GitLab; \textbf{jira\_support} to handle jira operations and \textbf{nexus\_webhook} to trigger webhooks every time a new artefact is published;
+    \item
+	    \textbf{ska-cicd-artefact-validations}\cite{ska-cicd-artefact-validations} based on Celery\cite{celery} containing a main server pulling messages from Redis\cite{redis}, transforming them into artifact validation tasks and storing the results into a MongoDB\cite{mongo} database. 
  \end{itemize}
  
  \subsection{Merge Request Quality Checks}
  
- To ensure that every developer is following the development workflow and best practices, automated checks are performed to the created Merge Requests. A webhook was added to the ska-telescope Gitlab group, and every time a new Merge Request is created the webhook triggers the service (represented in the fig. \ref{fig:CICD-automation-quality} as \textit{ska-cicd-automation}\cite{ska-cicd-automation}). The quality checks for the Merge Request will verify if:
+ To ensure that every developer follows the development workflow and best practices, automated checks are performed on Merge Requests. A webhook was added to the ska-telescope GitLab group, which triggers a service (fig. \ref{fig:CICD-automation-quality} \textit{ska-cicd-automation}\cite{ska-cicd-automation}) every time a new Merge Request is created. The quality checks will then verify if:
  
  \begin{itemize}
+	\setlength\itemsep{0.1em}
      \item the Merge Request Settings were set correctly;
      \item the branch name, the commit messages and the merge request have a Jira Ticket ID;
      \item the project has a proper license;
@@ -342,8 +362,8 @@ To verify if all the best practices are being followed, plugins and tasks were i
      \item the project has pipelines with the needed jobs.
  \end{itemize}
  
- After the checks are performed the result of the checks are reported back to the developers in the main Merge Request page on GitLab via a comment. Fig. \ref{fig:marvin-table} represents an example of the comment, it includes a table with the severity of the failed check, a little description about the check and the mitigation strategy, so the developer can easily mitigate the problem to follow the development workflow and best practices. 
- 
+ After performing the checks, their result is reported back to the developers on GitLab's main Merge Request page via a comment (see fig. \ref{fig:marvin-table} for an example of the comment, including a table with the severity of the failed check, description about the check and mitigation strategy).
+
  \begin{figure}[!htb]
     \centering
     \includegraphics*[width=0.8\columnwidth]{marvin-table}
@@ -354,25 +374,27 @@ To verify if all the best practices are being followed, plugins and tasks were i
 
 \subsection{Nexus Artefact Validation}
 
-There are a lot of packaged code artefacts of multiple formats being created in the SKA project, which are hosted inside Gitlab and then published to the Nexus Artifact repository. These artefacts should follow the SKAO naming and version conventions and include metadata in them as well. The artefact names should be complaint with semantic versioning 2.0.0\cite{semver} and all artefacts must include associated metadata with the required information, such as the person who published the artefacts, from which Gitlab repository is this artefact coming from and other useful information.
+There are many packaged code artefacts of multiple formats being created in the SKA project hosted on GitLab and then published to the Nexus Artifact repository. Those should follow SKAO's conventions: Artefact names should be compliant with semantic versioning 2.0.0\cite{semver} and must include associated metadata with the required information, such as who published it, from which GitLab repository is they originate from and other useful information.
 
-To ensure that the guidelines and policies described are followed for a consistent, compliant and robust artefact management, there are a series of automated validations in place in the \textit{ska-cicd-artefact-validations}\cite{ska-cicd-artefact-validations}. 
-If an artefact fails the validation, then it is moved to a quarantine state and the results of the checks are reported back to the developers that triggered the pipeline that published the artefact. The report to the developer is made by creating a newly Merge Request where the developer is made assignee and the description of the Merge Request has a table composed of the failed validations and instructions on how to mitigate them.
+To ensure that the guidelines and policies described are followed for consistent, compliant and robust artefact management, there are a series of automated validations in place at \textit{ska-cicd-artefact-validations}\cite{ska-cicd-artefact-validations}.  If an artefact fails validation, it is moved to a quarantine state and the results of the checks are reported back to developers that triggered the pipeline that published it. This report is made by creating a new Merge Request where the developer is made assignee and its description contains a table composed of the failed validations and instructions on how to mitigate them.
 
-The execution of the artefact validations happens following the Celery architecture where there are a main server which pull messages from a queue (Redis) and creates tasks (processes) to perform the specific validation. Every task can then create other tasks (sub-tasks) as needed to perform other activity such as quarantine an artefact or create a merge request on Gitlab. The result of a validation is stored in a MongoDB database. 
+The execution of artefact validations happens following the Celery architecture with a server that pulls messages from a queue (Redis) and creates tasks (processes) to perform the specific validation. Every task can then create other tasks as needed to perform other activities (i.e. quarantine the artefact or create merge request on GitLab). The result validation is stored in a MongoDB database. 
 
-Fig. \ref{fig:Artefact-Validation-Workflow} has a state machine diagram that shows the artefact workflow from when it gets published on the Gitlab Job until it gets quarantined or pass all the checks. In the diagram the celery sub-tasks are represented in blue, and this tasks have the following role:
+Fig. \ref{fig:Artefact-Validation-Workflow} has a state machine diagram showing the artefact workflow from when is published on the GitLab Job until it gets quarantined or passes all the checks. In the diagram the Celery sub-tasks represented in blue have the following roles:
 
 \begin{itemize}
-    \item \textbf{Validation} that performs the validation checks 
-    \item \textbf{Get Metadata} Task used to extract the metadata from the artefacts in case that they have it
-    \item \textbf{Container Scanning} Task that scans container vulnerabilities using trivy
-    \item \textbf{Quarantine} Task that quarantines the artefacts if any of the checks fail
-    \item \textbf{Create MR} Task that creates the MR to report the failures to the developers
-    \item \textbf{Insert DB} Task that inserts metadata into MongoDB about the artefacts published
+	\setlength\itemsep{0.1em}
+    \item \textbf{validation}: performs the validation checks;
+    \item \textbf{get metadata}: extract existing metadata from artefacts;
+    \item \textbf{container scanning}: scans for container vulnerabilities using Trivy;
+    \item \textbf{quarantine}: quarantine artefacts if any checks fail;
+    \item \textbf{create MR}: create MR to report failures to developers;
+    \item \textbf{insert DB}: insert metadata into MongoDB about published artefacts.
 \end{itemize}
 
-With this automated workflow, it is possible to keep and maintain a clean and organized repository, where all artefacts follow the guidelines and policies defined on the project.
+With this automated workflow, it is possible to keep and maintain a clean and
+organized repository, where all artefacts follow the guidelines and policies
+defined on the project.
 
 \begin{figure}[!htb]
 	\centering
@@ -382,20 +404,24 @@ With this automated workflow, it is possible to keep and maintain a clean and or
 \end{figure}
 
 \section{Conclusion}
-The majority of the decisions taken by the Systems Team follow the workflow as described by the Continuous Integration process outlined in Martin Fowler’s paper and inspired by the state-of-the-art industry practices of \cite{DevOps, CI, CD}. In particular:
+The majority of decisions taken by the Systems Team follow the workflow described by the Continuous Integration process outlined in Martin Fowler’s paper inspired by the state-of-the-art industry practices of \cite{DevOps, CI, CD}. In particular:
+
 \begin{itemize}
-    \item For each component of the system, there is only one repository with minimal use of branching that is short-lived;
-    \item build, tests and publish of artefacts are automated with the use of few commands (Makefile targets);
-    \item Every commit triggers a build in a different machine (a container within the K8s cluster);
-    \item Once the artefacts are built (container images, Helm charts, etc.), the repository SKAMPI will create automatically a new deployment of the system and more tests are done at that level (i.e. system tests);
-    \item Having a common repository (Nexus and GitLab page) for the code artefacts and the test results artefacts make it very easy to download the latest changes from every team and for each component to enable fast development;
-    \item The integration environment is accessible for every developer and, is deployed in a unique Namespace in a Kubernetes cluster.
+	\setlength\itemsep{0.1em}
+    \item for each component of the system, there is only one short-lived repository with minimal use of branching;
+    \item artefact build, tests and publishing are automated with the use of few commands (Makefile targets);
+    \item every commit triggers a build in a different machine;
+    \item once artefacts are built, the SKAMPI will automatically create a new deployment of the system and more tests will be done at that level (i.e. system tests);
+    \item having a common repository (Nexus and GitLab pages) for the code artefacts and test results simplifies downloading the latest changes from every team and for each component to enable fast development;
+    \item the integration environment is accessible to all developers and deployed in a unique Namespace on the cluster.
 \end{itemize}
 
-In addition, every artefact is validated in term quality so that a common standard across the project is maintained.
+In addition, every artefact is validated in terms of quality so that a common standard across the project is maintained.
 
 \section{ACKNOWLEDGEMENTS}
-This work has been supported by Italian Government (MEF - Ministero dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione, dell'Università e della Ricerca).
+This work was supported by Italian Government (MEF - Ministero
+dell'Economia e delle Finanze, MIUR - Ministero dell'Istruzione,
+dell'Università e della Ricerca).
 
 \ifboolexpr{bool{jacowbiblatex}}%
 	{\printbibliography}%
@@ -410,11 +436,17 @@ This work has been supported by Italian Government (MEF - Ministero dell'Economi
 		\url{https://martinfowler.com/articles/continuousIntegration.html}
 	
 	\bibitem{CD}
-		J. Humble, D. Farley, "Continuous Delivery: Reliable Software Releases Through Build, Test, and Deployment Automation",
-		2010, ISBN (0321601912, 9780321601919), Pub. Addison-Wesley Professional
+		J. Humble, D. Farley, "Continuous Delivery: Reliable Software
+			Releases Through Build, Test, and Deployment
+			Automation",
+		2010, ISBN (0321601912, 9780321601919), Pub. Addison-Wesley
+			Professional
 	
 	\bibitem{DevOps}
-		G. Kim, P. Debois, J. Willis, J. Humble, "The DevOps Handbook: How to Create World-Class Agility, Reliability, and Security in Technology Organizations", ISBN (1942788002 9781942788003)
+		G. Kim, P. Debois, J. Willis, J. Humble, "The DevOps Handbook:
+			How to Create World-Class Agility, Reliability, and
+			Security in Technology Organizations", ISBN (1942788002
+			9781942788003)
 	
 	\bibitem{docker}
 		Docker, 
@@ -461,7 +493,7 @@ This work has been supported by Italian Government (MEF - Ministero dell'Economi
 		\url{https://gitlab.com/ska-telescope/ska-skampi}
 	
 	\bibitem{gitlab}
-		Gitlab,
+		GitLab,
 		\url{https://gitlab.com/}
 	
 	\bibitem{nginx}
@@ -474,7 +506,7 @@ This work has been supported by Italian Government (MEF - Ministero dell'Economi
 	
 	
 	\bibitem{gitlabrunner}
-		Gitlab Runner,
+		GitLab Runner,
 		\url{https://gitlab.com/ska-telescope/sdi/deploy-gitlab-runners/}
 	
 	\bibitem{minio}
